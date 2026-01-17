@@ -1,38 +1,42 @@
-# GI / PPI — REASON CODES (CANONICAL V1)
+# GI / PPI — REASON CODES (CANONICAL)
 
-Authority Level: Binding Spec  
-Status: BINDING | NON-OPTIONAL  
+Authority Level: Binding Reason Code Registry  
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
 Effective Date: First Public GI/PPI Deployment
 
-## 1. Purpose
+Reason codes explain *why* a decision occurred.
+They do not explain *how to fix it*.
 
-Reason codes are stable, machine-readable explanations for ALLOW/DENY/ESCALATE/REQUIRE_ATTESTATION.
+---
 
-They are not user-facing prose.
-They are audit primitives.
+## DECISION REASON CODES
 
-## 2. Canonical Codes
+### ALLOW
+- ALLOW_POLICY_MATCH
+- ALLOW_EXPLICIT_OVERRIDE
 
-CTX_MISSING  
-CTX_AMBIGUOUS  
-POLICY_VERSION_MISSING  
-POLICY_NOT_FOUND  
-POLICY_CONFLICT_NO_RESOLUTION  
-RULE_NO_MATCH  
-CAPABILITY_EXCEEDED  
-ATTESTATION_REQUIRED  
-ENGINE_VERSION_MISMATCH  
-NON_DETERMINISTIC_EVAL_FORBIDDEN  
-INVALID_REQUEST_SCHEMA  
-INTERNAL_EVAL_ERROR_DENY
+### DENY
+- DENY_MISSING_CONTEXT
+- DENY_POLICY_NOT_FOUND
+- DENY_POLICY_CONFLICT
+- DENY_CAPABILITY_NOT_PERMITTED
+- DENY_SCHEMA_INVALID
+- DENY_DETERMINISM_VIOLATION
 
-## 3. Usage
+### ESCALATE
+- ESCALATE_POLICY_REQUIRES_AUTHORITY
+- ESCALATE_ATTESTATION_REQUIRED
 
-At least one reason code must be present for:
-DENY
-ESCALATE
-REQUIRE_ATTESTATION
+### REQUIRE_ATTESTATION
+- REQUIRE_HUMAN_ATTESTATION
+- REQUIRE_EXTERNAL_ASSERTION
 
-ALLOW may include reason codes but is not required.
+---
+
+## RULES
+
+- Every decision record MUST include ≥1 reason code.
+- Reason codes are immutable once recorded.
+- Reason codes are not user-facing explanations.
 
 Git is law.
