@@ -1,16 +1,25 @@
 # ESCALATION_GATE — LANES (CANONICAL)
 
 Authority Level: Binding Lane Spec  
-Status: ✅ BINDING | ✅ NON-OPTIONAL
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Effective Date: First Public GI/PPI Deployment
 
-Lane: ESCALATION_GATE_V1 (SPEC_ONLY)
+## 1. Role
 
-Purpose:
-- define the explicit escalation mechanism
-- escalation is never automatic
-- escalation never mutates policy
+ESCALATION_GATE defines explicit escalation.
+
+Escalation is never automatic.
+
+## 2. Lane Definitions
+
+### Lane: ESCALATION_GATE_V1 (SPEC_ONLY)
+Status: SPEC_ONLY
+
+Rules:
+- escalation requires explicit request metadata
 - escalation produces a new decision record
+- escalation never mutates policy bundles
+- escalation never implies approval
+- missing escalation authority -> DENY_POLICY_NOT_FOUND or DENY_CAPABILITY_NOT_PERMITTED
 
-Status:
-SPEC_ONLY.
 Git is law.
