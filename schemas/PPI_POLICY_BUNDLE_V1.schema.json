@@ -1,37 +1,41 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "PPI_POLICY_BUNDLE_V1",
-  "title": "PPI Policy Bundle V1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PPI_POLICY_BUNDLE_V1",
   "type": "object",
-  "required": ["policy_id", "policy_version", "created_at", "rules", "conflict_resolution"],
+  "required": [
+    "schema",
+    "policy_key",
+    "policy_version",
+    "conflict_mode",
+    "rules"
+  ],
   "properties": {
-    "policy_id": { "type": "string", "minLength": 1 },
-    "policy_version": { "type": "string", "minLength": 1 },
-    "created_at": { "type": "string", "format": "date-time" },
-
-    "description": { "type": "string" },
-
+    "schema": {
+      "type": "string",
+      "const": "PPI_POLICY_BUNDLE_V1"
+    },
+    "policy_key": {
+      "type": "string",
+      "description": "Stable identifier for the policy family"
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Pinned version string; must match request.policy_version"
+    },
+    "conflict_mode": {
+      "type": "string",
+      "enum": ["DENY_ON_CONFLICT", "PRIORITY_ORDER"],
+      "description": "How conflicts resolve. Default should be DENY_ON_CONFLICT."
+    },
+    "priority_order": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "If conflict_mode=PRIORITY_ORDER, this defines rule_key precedence."
+    },
     "rules": {
       "type": "array",
-      "minItems": 1,
-      "items": { "$ref": "PPI_RULE_NODE_V1.schema.json" }
-    },
-
-    "conflict_resolution": {
-      "type": "object",
-      "required": ["mode"],
-      "properties": {
-        "mode": {
-          "type": "string",
-          "enum": ["deny_on_conflict", "explicit_priority_only"]
-        },
-        "priority_order": {
-          "type": "array",
-          "items": { "type": "string" },
-          "description": "Explicit rule_id ordering, used only when mode=explicit_priority_only."
-        }
-      },
-      "additionalProperties": false
+      "items": { "$ref": "./PPI_RULE_NODE_V1.schema.json" },
+      "minItems": 1
     }
   },
   "additionalProperties": false
