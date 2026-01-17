@@ -4,31 +4,39 @@ Authority Level: Binding Lane Spec
 Status: ✅ BINDING | ✅ NON-OPTIONAL  
 Effective Date: First Public GI/PPI Deployment
 
-## Lane: PPI_CORE_V1 (SPEC_ONLY)
+## 1. Role
 
-Purpose: deterministic evaluation of a PPI_REQUEST against a pinned policy bundle.
+PPI_CORE is the deterministic evaluator.
 
-Inputs:
-- PPI_REQUEST_V1 (schemas/PPI_REQUEST_V1.schema.json)
-- policy bundle (schemas/PPI_POLICY_BUNDLE_V1.schema.json)
+It receives:
+- a PPI_REQUEST_V1
+- a pinned PPI_POLICY_BUNDLE_V1 (version + hash)
 
-Outputs:
-- PPI_DECISION_RECORD_V1 (schemas/PPI_DECISION_RECORD_V1.schema.json)
+It emits:
+- a PPI_DECISION_RECORD_V1
+
+PPI_CORE never executes actions.
+
+## 2. Lane Definitions
+
+### Lane: PPI_CORE_V1 (SPEC_ONLY)
+Status: SPEC_ONLY
+
+Rules:
+- schema validation is mandatory
+- missing required fields -> DENY_SCHEMA_INVALID
+- missing required context keys -> DENY_MISSING_CONTEXT
+- policy not found -> DENY_POLICY_NOT_FOUND
+- policy conflict -> DENY_POLICY_CONFLICT unless conflict_mode resolves
+- no enrichment, no inference, no external fetch
+- decision record must include reason_codes and rule_path
 
 Determinism:
-- No hidden state
-- No inference
-- No “closest match”
-- Missing context -> DENY (CTX_MISSING) unless an explicit rule matches first
+- evaluation is a pure function of (request, policy_bundle, engine_version)
+- timestamps are data fields only; they never influence decision
 
-Rule ordering:
-- If conflict_resolution.mode=deny_on_conflict: conflicting matches -> DENY (POLICY_CONFLICT_NO_RESOLUTION)
-- If conflict_resolution.mode=explicit_priority_only: resolve by priority_order list only; if unresolved -> DENY
-
-Terminal decisions:
-ALLOW | DENY | ESCALATE | REQUIRE_ATTESTATION
-
-Status:
-SPEC_ONLY until runtime exists + tests exist.
+Refusal semantics:
+- DENY is a correct outcome
+- refusal is success
 
 Git is law.
