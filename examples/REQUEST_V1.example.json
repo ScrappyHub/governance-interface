@@ -1,0 +1,14 @@
+{
+  "request_id": "req_00000001",
+  "created_at": "2026-01-16T00:00:00Z",
+  "policy_version": "v1",
+  "actor": { "actor_id": "alec", "actor_kind": "human" },
+  "action": {
+    "action_kind": "submit",
+    "target": "some_target",
+    "requested_capabilities": ["CAP_EVALUATE_REQUEST"]
+  },
+  "declared_context": {
+    "note": "declarative only"
+  }
+}
