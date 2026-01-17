@@ -1,35 +1,43 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "PPI_STATE_MACHINE_V1",
-  "title": "PPI State Machine V1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PPI_STATE_MACHINE_V1",
   "type": "object",
-  "required": ["machine_id", "version", "states", "transitions", "terminal_states"],
+  "required": [
+    "schema",
+    "states",
+    "initial_state",
+    "terminal_states",
+    "transitions"
+  ],
   "properties": {
-    "machine_id": { "type": "string", "minLength": 1 },
-    "version": { "type": "string", "minLength": 1 },
-
+    "schema": {
+      "type": "string",
+      "const": "PPI_STATE_MACHINE_V1"
+    },
     "states": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": { "type": "string" },
       "minItems": 1
     },
-
+    "initial_state": { "type": "string" },
     "terminal_states": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
+      "items": { "type": "string" },
       "minItems": 1
     },
-
     "transitions": {
       "type": "array",
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["from", "to", "on"],
+        "required": ["from", "to", "on_decision"],
         "properties": {
-          "from": { "type": "string", "minLength": 1 },
-          "to": { "type": "string", "minLength": 1 },
-          "on": { "type": "string", "minLength": 1 }
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "on_decision": {
+            "type": "string",
+            "enum": ["ALLOW", "DENY", "ESCALATE", "REQUIRE_ATTESTATION"]
+          }
         },
         "additionalProperties": false
       }
