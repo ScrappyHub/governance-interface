@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "PPI_RULE_NODE_V1",
+  "title": "PPI Rule Node V1",
+  "type": "object",
+  "required": ["rule_id", "effect", "match", "decision", "reason_codes"],
+  "properties": {
+    "rule_id": { "type": "string", "minLength": 1 },
+
+    "effect": {
+      "type": "string",
+      "enum": ["allow", "deny", "require_attestation", "escalate"]
+    },
+
+    "match": {
+      "type": "object",
+      "required": ["action_kind", "target", "capabilities_any"],
+      "properties": {
+        "action_kind": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+
+        "capabilities_any": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+
+        "required_context_keys": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "description": "If any required key is missing -> rule cannot match and evaluator must consider missing context DENY rules if present."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "decision": {
+      "type": "string",
+      "enum": ["ALLOW", "DENY", "ESCALATE", "REQUIRE_ATTESTATION"]
+    },
+
+    "reason_codes": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "minItems": 1
+    },
+
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}
