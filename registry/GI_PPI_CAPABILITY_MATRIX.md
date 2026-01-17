@@ -1,40 +1,40 @@
 # GI / PPI — CAPABILITY MATRIX (CANONICAL)
 
-Authority Level: Binding Platform Spec  
-Status: BINDING | NON-OPTIONAL  
+Authority Level: Binding Capability Registry  
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
 Effective Date: First Public GI/PPI Deployment
 
-## 1. Purpose
+Capabilities define what a request may propose.
+Capabilities do not imply meaning, intent, or approval.
 
-Capabilities define what an engine is allowed to do.
+---
 
-Capabilities do not imply intent.
-Capabilities do not imply interpretation.
-Capabilities are permission surfaces only.
+## GLOBAL RULES
 
-## 2. Global Capabilities (Locked)
+- Capabilities are declarative only.
+- Capabilities are evaluated, not inferred.
+- Absence of a required capability -> DENY.
+- Capabilities never mutate policy.
 
-CAP_EVALUATE_REQUEST  
-CAP_RESOLVE_POLICY_GRAPH  
-CAP_ENFORCE_STATE_MACHINE  
-CAP_WRITE_DECISION_RECORD  
-CAP_HASH_DECISION_RECORD  
-CAP_ESCALATE_EXPLICITLY  
-CAP_REQUIRE_ATTESTATION  
-CAP_REFUSE_DETERMINISTICALLY
+---
 
-## 3. Engine Capability Assignments
+## CANONICAL CAPABILITIES (V1)
 
-| Engine Key | Allowed Capabilities |
-|---|---|
-| PPI_CORE | CAP_EVALUATE_REQUEST, CAP_REFUSE_DETERMINISTICALLY, CAP_REQUIRE_ATTESTATION |
-| POLICY_GRAPH | CAP_RESOLVE_POLICY_GRAPH |
-| STATE_MACHINE | CAP_ENFORCE_STATE_MACHINE |
-| AUDIT_LEDGER | CAP_WRITE_DECISION_RECORD, CAP_HASH_DECISION_RECORD |
-| ESCALATION_GATE | CAP_ESCALATE_EXPLICITLY |
+| Capability Key | Description |
+|---------------|-------------|
+| CAP_PROPOSE_ACTION | Propose a governed action |
+| CAP_READ_RESOURCE | Read a governed resource |
+| CAP_WRITE_RESOURCE | Write or modify a governed resource |
+| CAP_EXECUTE_OPERATION | Execute a controlled operation |
+| CAP_REQUEST_ESCALATION | Request escalation to higher authority |
+| CAP_REQUIRE_ATTESTATION | Require attestation prior to approval |
 
-## 4. Prohibition
+---
 
-No engine may claim any capability not explicitly granted here.
+## CAPABILITY LAW
+
+- Capabilities must be explicitly listed in requests.
+- Engines may not add, infer, or enrich capabilities.
+- Capability interpretation is policy-defined only.
 
 Git is law.
