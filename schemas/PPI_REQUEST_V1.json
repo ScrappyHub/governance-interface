@@ -1,44 +1,39 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "PPI_REQUEST_V1",
-  "title": "PPI Request V1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PPI_REQUEST_V1",
   "type": "object",
-  "required": ["request_id", "policy_version", "actor", "action", "declared_context", "created_at"],
+  "required": [
+    "request_id",
+    "actor_id",
+    "proposed_action",
+    "capabilities",
+    "policy_version"
+  ],
   "properties": {
-    "request_id": { "type": "string", "minLength": 8 },
-    "created_at": { "type": "string", "format": "date-time" },
-
-    "policy_version": { "type": "string", "minLength": 1 },
-
-    "actor": {
-      "type": "object",
-      "required": ["actor_id", "actor_kind"],
-      "properties": {
-        "actor_id": { "type": "string", "minLength": 1 },
-        "actor_kind": { "type": "string", "enum": ["human", "service", "system", "model"] }
-      },
-      "additionalProperties": false
+    "request_id": {
+      "type": "string",
+      "description": "Caller-provided unique identifier"
     },
-
-    "action": {
-      "type": "object",
-      "required": ["action_kind", "target", "requested_capabilities"],
-      "properties": {
-        "action_kind": { "type": "string", "minLength": 1 },
-        "target": { "type": "string", "minLength": 1 },
-        "requested_capabilities": {
-          "type": "array",
-          "items": { "type": "string", "minLength": 1 },
-          "minItems": 1
-        }
-      },
-      "additionalProperties": false
+    "actor_id": {
+      "type": "string",
+      "description": "Identifier of proposing entity"
     },
-
-    "declared_context": {
+    "proposed_action": {
+      "type": "string",
+      "description": "Declarative action label"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1
+    },
+    "context": {
       "type": "object",
-      "description": "Declarative context only. No inference. Missing keys must cause DENY where required by policy.",
       "additionalProperties": true
+    },
+    "policy_version": {
+      "type": "string",
+      "description": "Pinned policy bundle version"
     }
   },
   "additionalProperties": false
