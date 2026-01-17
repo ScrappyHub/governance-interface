@@ -1,42 +1,42 @@
 # GI / PPI — REASON CODES (CANONICAL)
 
-Authority Level: Binding Reason Code Registry  
-Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Authority Level: Binding Reason Registry  
+Status: ✅ LOCKED | ✅ NON-OPTIONAL  
 Effective Date: First Public GI/PPI Deployment
 
 Reason codes explain *why* a decision occurred.
-They do not explain *how to fix it*.
+They do not justify, soften, or contextualize outcomes.
 
 ---
 
-## DECISION REASON CODES
+## GENERAL DENIAL CODES
 
-### ALLOW
-- ALLOW_POLICY_MATCH
-- ALLOW_EXPLICIT_OVERRIDE
-
-### DENY
-- DENY_MISSING_CONTEXT
-- DENY_POLICY_NOT_FOUND
-- DENY_POLICY_CONFLICT
-- DENY_CAPABILITY_NOT_PERMITTED
-- DENY_SCHEMA_INVALID
-- DENY_DETERMINISM_VIOLATION
-
-### ESCALATE
-- ESCALATE_POLICY_REQUIRES_AUTHORITY
-- ESCALATE_ATTESTATION_REQUIRED
-
-### REQUIRE_ATTESTATION
-- REQUIRE_HUMAN_ATTESTATION
-- REQUIRE_EXTERNAL_ASSERTION
+| Code | Meaning |
+|-----|--------|
+| DENY_SCHEMA_INVALID | Request failed schema validation |
+| DENY_MISSING_CONTEXT | Required context key missing |
+| DENY_POLICY_NOT_FOUND | Policy not registered |
+| DENY_POLICY_CONFLICT | Conflicting rules detected |
+| DENY_CAPABILITY_NOT_PERMITTED | Capability missing or invalid |
+| DENY_CONSTITUTIONAL_VIOLATION | Stop layer violation |
+| DENY_DETERMINISM_VIOLATION | Non-deterministic behavior detected |
 
 ---
 
-## RULES
+## NON-DENIAL CODES
 
-- Every decision record MUST include ≥1 reason code.
-- Reason codes are immutable once recorded.
-- Reason codes are not user-facing explanations.
+| Code | Meaning |
+|-----|--------|
+| ALLOW_POLICY_MATCH | Policy explicitly allows |
+| ESCALATE_REQUIRED | Explicit escalation required |
+| REQUIRE_ATTESTATION | Attestation required before reevaluation |
+
+---
+
+## SEMANTIC LAW
+
+- Reason codes are immutable once emitted.
+- Multiple reason codes may exist per decision.
+- Reason codes do not imply remediation.
 
 Git is law.
