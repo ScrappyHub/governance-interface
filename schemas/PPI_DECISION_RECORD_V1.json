@@ -1,59 +1,52 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "PPI_DECISION_RECORD_V1",
-  "title": "PPI Decision Record V1",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PPI_DECISION_RECORD_V1",
   "type": "object",
   "required": [
     "decision_id",
-    "created_at",
-    "policy_version",
-    "engine_versions",
-    "request_hash_sha256",
+    "request_id",
     "decision",
     "reason_codes",
-    "rule_path",
-    "record_hash_sha256"
+    "policy_version",
+    "policy_hash_sha256",
+    "engine_version",
+    "evaluated_at"
   ],
   "properties": {
-    "decision_id": { "type": "string", "minLength": 8 },
-    "created_at": { "type": "string", "format": "date-time" },
-
-    "policy_version": { "type": "string", "minLength": 1 },
-
-    "engine_versions": {
-      "type": "object",
-      "required": ["PPI_CORE", "POLICY_GRAPH", "STATE_MACHINE", "AUDIT_LEDGER", "ESCALATION_GATE"],
-      "properties": {
-        "PPI_CORE": { "type": "string", "minLength": 1 },
-        "POLICY_GRAPH": { "type": "string", "minLength": 1 },
-        "STATE_MACHINE": { "type": "string", "minLength": 1 },
-        "AUDIT_LEDGER": { "type": "string", "minLength": 1 },
-        "ESCALATION_GATE": { "type": "string", "minLength": 1 }
-      },
-      "additionalProperties": false
+    "decision_id": {
+      "type": "string"
     },
-
-    "request_hash_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
-
-    "decision": { "type": "string", "enum": ["ALLOW", "DENY", "ESCALATE", "REQUIRE_ATTESTATION"] },
-
+    "request_id": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["ALLOW", "DENY", "ESCALATE", "REQUIRE_ATTESTATION"]
+    },
     "reason_codes": {
       "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "minItems": 0
+      "items": { "type": "string" },
+      "minItems": 1
     },
-
     "rule_path": {
-      "type": "string",
-      "description": "Canonical path to the rule resolution outcome. Use explicit NO_MATCH if none."
+      "type": "array",
+      "items": { "type": "string" }
     },
-
-    "record_hash_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
-
+    "policy_version": {
+      "type": "string"
+    },
+    "policy_hash_sha256": {
+      "type": "string"
+    },
+    "engine_version": {
+      "type": "string"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
     "prior_record_hash_sha256": {
-      "type": ["string", "null"],
-      "pattern": "^[a-fA-F0-9]{64}$",
-      "description": "If this record corrects or supersedes another record, reference it here."
+      "type": "string"
     }
   },
   "additionalProperties": false
