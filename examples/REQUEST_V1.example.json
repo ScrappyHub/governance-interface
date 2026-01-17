@@ -1,14 +1,10 @@
 {
-  "request_id": "req_00000001",
-  "created_at": "2026-01-16T00:00:00Z",
-  "policy_version": "v1",
-  "actor": { "actor_id": "alec", "actor_kind": "human" },
-  "action": {
-    "action_kind": "submit",
-    "target": "some_target",
-    "requested_capabilities": ["CAP_EVALUATE_REQUEST"]
+  "request_id": "req_0001",
+  "actor_id": "actor_123",
+  "proposed_action": "READ_RESOURCE",
+  "capabilities": ["CAP_READ_RESOURCE"],
+  "context": {
+    "target_id": "resource_abc"
   },
-  "declared_context": {
-    "note": "declarative only"
-  }
+  "policy_version": "v1"
 }
