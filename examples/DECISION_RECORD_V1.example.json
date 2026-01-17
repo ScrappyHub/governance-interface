@@ -1,0 +1,18 @@
+{
+  "decision_id": "dec_00000001",
+  "created_at": "2026-01-16T00:00:01Z",
+  "policy_version": "v1",
+  "engine_versions": {
+    "PPI_CORE": "v1",
+    "POLICY_GRAPH": "v1",
+    "STATE_MACHINE": "v1",
+    "AUDIT_LEDGER": "v1",
+    "ESCALATION_GATE": "v1"
+  },
+  "request_hash_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "decision": "DENY",
+  "reason_codes": ["INVALID_REQUEST_SCHEMA"],
+  "rule_path": "NO_MATCH",
+  "record_hash_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "prior_record_hash_sha256": null
+}
