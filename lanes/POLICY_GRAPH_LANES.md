@@ -1,19 +1,27 @@
 # POLICY_GRAPH — LANES (CANONICAL)
 
 Authority Level: Binding Lane Spec  
-Status: ✅ BINDING | ✅ NON-OPTIONAL
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Effective Date: First Public GI/PPI Deployment
 
-Lane: POLICY_GRAPH_V1 (SPEC_ONLY)
+## 1. Role
 
-Purpose:
-- deterministic rule matching and rule path resolution
-- no inference
-- no enrichment
-- no implicit weighting
+POLICY_GRAPH resolves a policy bundle into an ordered evaluation graph.
 
-Output:
-- rule_path string used in decision record
+It produces deterministic rule_path outputs used by PPI_CORE.
 
-Status:
-SPEC_ONLY.
+## 2. Lane Definitions
+
+### Lane: POLICY_GRAPH_V1 (SPEC_ONLY)
+Status: SPEC_ONLY
+
+Rules:
+- compile policy rules into deterministic order
+- conflict handling follows policy_bundle.conflict_mode
+- if conflict_mode=DENY_ON_CONFLICT, conflicting matches yield DENY_POLICY_CONFLICT
+- if conflict_mode=PRIORITY_ORDER, first rule_key match in priority_order wins
+- graph compilation must be stable under canonical serialization
+
+No side effects.
+
 Git is law.
