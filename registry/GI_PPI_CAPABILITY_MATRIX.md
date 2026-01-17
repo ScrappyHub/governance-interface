@@ -1,40 +1,44 @@
 # GI / PPI — CAPABILITY MATRIX (CANONICAL)
 
-Authority Level: Binding Capability Registry  
-Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Authority Level: Binding Capability Specification  
+Status: ✅ LOCKED | ✅ NON-OPTIONAL  
 Effective Date: First Public GI/PPI Deployment
 
-Capabilities define what a request may propose.
-Capabilities do not imply meaning, intent, or approval.
+This file defines all capability keys recognized by GI / PPI.
+
+Capabilities are declarative permissions only.
+They do not imply intent, meaning, or execution.
 
 ---
 
-## GLOBAL RULES
+## CAPABILITY RULES
 
-- Capabilities are declarative only.
-- Capabilities are evaluated, not inferred.
-- Absence of a required capability -> DENY.
-- Capabilities never mutate policy.
+1. Capabilities must be explicitly declared.
+2. Missing capability => DENY.
+3. Capabilities grant eligibility for evaluation, not approval.
+4. Capabilities may not be inferred or expanded.
 
 ---
 
-## CANONICAL CAPABILITIES (V1)
+## CANONICAL CAPABILITIES
 
 | Capability Key | Description |
 |---------------|-------------|
-| CAP_PROPOSE_ACTION | Propose a governed action |
-| CAP_READ_RESOURCE | Read a governed resource |
-| CAP_WRITE_RESOURCE | Write or modify a governed resource |
-| CAP_EXECUTE_OPERATION | Execute a controlled operation |
-| CAP_REQUEST_ESCALATION | Request escalation to higher authority |
-| CAP_REQUIRE_ATTESTATION | Require attestation prior to approval |
+| CAP_PROPOSE_ACTION | Actor may submit an action for evaluation |
+| CAP_READ_RESOURCE | Actor may request read access |
+| CAP_WRITE_RESOURCE | Actor may request write access |
+| CAP_MODIFY_POLICY | Actor may request policy change (requires escalation) |
+| CAP_ESCALATE_REQUEST | Actor may request escalation |
+| CAP_ATTEST | Actor may provide attestation metadata |
 
 ---
 
-## CAPABILITY LAW
+## PROHIBITIONS
 
-- Capabilities must be explicitly listed in requests.
-- Engines may not add, infer, or enrich capabilities.
-- Capability interpretation is policy-defined only.
+Capabilities MUST NOT:
+- execute actions
+- imply trust
+- bypass policy
+- override denial
 
 Git is law.
