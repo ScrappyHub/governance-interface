@@ -1,0 +1,12 @@
+{
+  "machine_id": "PPI_EVAL",
+  "version": "v1",
+  "states": ["RECEIVED", "VALIDATED", "EVALUATED", "RECORDED", "TERMINAL"],
+  "terminal_states": ["TERMINAL"],
+  "transitions": [
+    { "from": "RECEIVED", "to": "VALIDATED", "on": "schema_ok" },
+    { "from": "VALIDATED", "to": "EVALUATED", "on": "policy_pinned" },
+    { "from": "EVALUATED", "to": "RECORDED", "on": "decision_emitted" },
+    { "from": "RECORDED", "to": "TERMINAL", "on": "record_hashed" }
+  ]
+}
