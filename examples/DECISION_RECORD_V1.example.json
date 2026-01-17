@@ -1,18 +1,12 @@
 {
-  "decision_id": "dec_00000001",
-  "created_at": "2026-01-16T00:00:01Z",
-  "policy_version": "v1",
-  "engine_versions": {
-    "PPI_CORE": "v1",
-    "POLICY_GRAPH": "v1",
-    "STATE_MACHINE": "v1",
-    "AUDIT_LEDGER": "v1",
-    "ESCALATION_GATE": "v1"
-  },
-  "request_hash_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "decision_id": "dec_0001",
+  "request_id": "req_0001",
   "decision": "DENY",
-  "reason_codes": ["INVALID_REQUEST_SCHEMA"],
-  "rule_path": "NO_MATCH",
-  "record_hash_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
-  "prior_record_hash_sha256": null
+  "reason_codes": ["DENY_POLICY_NOT_FOUND"],
+  "rule_path": ["POLICY_GRAPH:none"],
+  "policy_version": "v1",
+  "policy_hash_sha256": "UNSET_SPEC_ONLY",
+  "engine_version": "ppi_core_v1_spec_only",
+  "evaluated_at": "2026-01-16T00:00:00Z",
+  "prior_record_hash_sha256": "UNSET_SPEC_ONLY"
 }
