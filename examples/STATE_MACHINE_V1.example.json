@@ -1,12 +1,16 @@
 {
-  "machine_id": "PPI_EVAL",
-  "version": "v1",
-  "states": ["RECEIVED", "VALIDATED", "EVALUATED", "RECORDED", "TERMINAL"],
-  "terminal_states": ["TERMINAL"],
+  "schema": "PPI_STATE_MACHINE_V1",
+  "states": ["CREATED", "EVALUATED", "SEALED"],
+  "initial_state": "CREATED",
+  "terminal_states": ["SEALED"],
   "transitions": [
-    { "from": "RECEIVED", "to": "VALIDATED", "on": "schema_ok" },
-    { "from": "VALIDATED", "to": "EVALUATED", "on": "policy_pinned" },
-    { "from": "EVALUATED", "to": "RECORDED", "on": "decision_emitted" },
-    { "from": "RECORDED", "to": "TERMINAL", "on": "record_hashed" }
+    { "from": "CREATED", "to": "EVALUATED", "on_decision": "ALLOW" },
+    { "from": "CREATED", "to": "EVALUATED", "on_decision": "DENY" },
+    { "from": "CREATED", "to": "EVALUATED", "on_decision": "ESCALATE" },
+    { "from": "CREATED", "to": "EVALUATED", "on_decision": "REQUIRE_ATTESTATION" },
+    { "from": "EVALUATED", "to": "SEALED", "on_decision": "ALLOW" },
+    { "from": "EVALUATED", "to": "SEALED", "on_decision": "DENY" },
+    { "from": "EVALUATED", "to": "SEALED", "on_decision": "ESCALATE" },
+    { "from": "EVALUATED", "to": "SEALED", "on_decision": "REQUIRE_ATTESTATION" }
   ]
 }
