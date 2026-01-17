@@ -1,39 +1,46 @@
 # GI / PPI — ENGINE REGISTRY (CANONICAL)
 
-Authority Level: Binding Registry Index  
-Status: BINDING | NON-OPTIONAL  
+Authority Level: Binding Engine Registry  
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
 Effective Date: First Public GI/PPI Deployment
 
-## 1. Purpose
+This registry defines all engines that exist within the Governance Interface (GI) and Policy Proposal Interface (PPI).
 
-This file is the authoritative registry of GI/PPI engines.
-Anything not listed here does not exist inside GI/PPI.
+If an engine is not listed here, it does not exist.
 
-## 2. Registry Status Model
+---
 
-RESERVED: name exists, not executable  
-SPEC_ONLY: contract exists, not executable  
-IMPLEMENTED: lane exists + tests exist  
-ACTIVE: implemented + determinism + audit + replay proven
+## REGISTRY RULES (ABSOLUTE)
 
-## 3. Canonical Engine Family
+1. Engines exist only if registered here.
+2. Engine status is authoritative.
+3. No engine may execute unless status = IMPLEMENTED and Docs Lock has passed.
+4. SPEC_ONLY engines are non-executable by law.
+5. Registry changes require Git-governed amendment.
 
-| Engine Key | Name | Role | Status | Engine Path |
-|---|---|---|---|---|
-| PPI_CORE | Policy-Bound Processing Core | Deterministic evaluation of requests | SPEC_ONLY | engines/ppi_core/v1/ |
-| POLICY_GRAPH | Policy Graph Resolver | Rule storage + resolution + conflict rules | SPEC_ONLY | engines/policy_graph/v1/ |
-| STATE_MACHINE | Request Lifecycle State Machine | Formal transitions and terminal states | SPEC_ONLY | engines/state_machine/v1/ |
-| AUDIT_LEDGER | Audit Ledger | Append-only decision record custody | SPEC_ONLY | engines/audit_ledger/v1/ |
-| ESCALATION_GATE | Escalation Interface | Explicit non-automatic escalation surface | SPEC_ONLY | engines/escalation_gate/v1/ |
+---
 
-## 4. Identity Rule
+## ENGINE FAMILY (LOCKED)
 
-Engine identity is defined only by this registry.
+| Engine Key | Name | Role | Status | Lane Spec |
+|-----------|------|------|--------|-----------|
+| PPI_CORE | Policy Proposal Evaluator | Deterministic request evaluation | SPEC_ONLY | lanes/PPI_CORE_LANES.md |
+| POLICY_GRAPH | Policy Graph Resolver | Rule resolution & conflict handling | SPEC_ONLY | lanes/POLICY_GRAPH_LANES.md |
+| STATE_MACHINE | Lifecycle State Engine | Request/decision state transitions | SPEC_ONLY | lanes/STATE_MACHINE_LANES.md |
+| AUDIT_LEDGER | Audit Ledger Engine | Append-only decision record custody | SPEC_ONLY | lanes/AUDIT_LEDGER_LANES.md |
+| ESCALATION_GATE | Escalation Interface Engine | Explicit non-automatic escalation | SPEC_ONLY | lanes/ESCALATION_GATE_LANES.md |
 
-Folder names, module names, or filenames do not define identity.
+---
 
-## 5. Final Clause
+## STATUS DEFINITIONS
 
-Unregistered engines do not exist. GI/PPI must refuse them.
+- SPEC_ONLY  
+  Declared by law. No runtime permitted.
+
+- IMPLEMENTED  
+  Deterministic runtime exists. Tests pass. Replay proven.
+
+- ACTIVE  
+  IMPLEMENTED + approved by governance amendment.
 
 Git is law.
