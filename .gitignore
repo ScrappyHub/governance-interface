@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+node_modules/
+dist/
+build/
+
+.env
+.env.*
+*.log
