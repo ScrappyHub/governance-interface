@@ -1,17 +1,24 @@
 # AUDIT_LEDGER — LANES (CANONICAL)
 
 Authority Level: Binding Lane Spec  
-Status: ✅ BINDING | ✅ NON-OPTIONAL
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Effective Date: First Public GI/PPI Deployment
 
-Lane: AUDIT_LEDGER_V1 (SPEC_ONLY)
+## 1. Role
 
-Purpose:
-- canonical serialization
-- sha256 hashing
-- append-only custody
+AUDIT_LEDGER provides append-only custody for decision records.
 
-No update. No delete.
+## 2. Lane Definitions
 
-Status:
-SPEC_ONLY.
+### Lane: AUDIT_LEDGER_V1 (SPEC_ONLY)
+Status: SPEC_ONLY
+
+Rules:
+- append-only insertion; updates and deletes forbidden
+- each record may include prior_record_hash_sha256 for chain-hash linking
+- ledger ordering must be reproducible by deterministic keys (not wall-clock)
+
+Tamper detection:
+- replay recomputes hashes and detects mismatch
+
 Git is law.
