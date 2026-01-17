@@ -1,15 +1,23 @@
 # STATE_MACHINE — LANES (CANONICAL)
 
 Authority Level: Binding Lane Spec  
-Status: ✅ BINDING | ✅ NON-OPTIONAL
+Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Effective Date: First Public GI/PPI Deployment
 
-Lane: STATE_MACHINE_V1 (SPEC_ONLY)
+## 1. Role
 
-Purpose:
-- define lifecycle transitions for evaluation
-- enforce terminal states
-- forbid ambiguous transitions
+STATE_MACHINE defines allowed lifecycle transitions for requests and decisions.
 
-Status:
-SPEC_ONLY.
+## 2. Lane Definitions
+
+### Lane: STATE_MACHINE_V1 (SPEC_ONLY)
+Status: SPEC_ONLY
+
+Rules:
+- all transitions must be explicit
+- invalid transition -> DENY_DETERMINISM_VIOLATION (treated as structural failure)
+- terminal states are final; no post-terminal transitions
+
+This engine does not evaluate policy; it governs lifecycle legality.
+
 Git is law.
