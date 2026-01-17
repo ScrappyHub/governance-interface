@@ -1,72 +1,29 @@
-# GOVERNANCE INDEX — GI/PPI (CANONICAL)
+# GI / PPI — GOVERNANCE INDEX (CANONICAL)
 
 Authority Level: Binding Index  
-Status: ✅ BINDING | ✅ NON-OPTIONAL  
+Status: ✅ LOCKED  
 Effective Date: First Public GI/PPI Deployment
 
-## 1. Enforcement Chain (Strict)
+This file defines the complete authority chain.
 
-If any conflict exists, higher authority wins immediately.
+If it is not listed here, it has no standing.
 
-1) governance/GI_PPI_GENESIS_LAW.md  
-2) governance/GI_PPI_REFUSAL_SEMANTICS_LAW.md  
-3) governance/GI_PPI_AUDIT_AND_REPLAY_LAW.md  
-4) governance/GI_PPI_ENGINE_EXECUTION_BOUNDARY_LAW.md  
-5) governance/GI_PPI_POLICY_VERSIONING_LAW.md  
-6) governance/GI_PPI_CHANGE_CONTROL_LAW.md  
+---
 
-7) registry/GI_PPI_ENGINE_REGISTRY.md  
-8) registry/GI_PPI_CAPABILITY_MATRIX.md  
-9) registry/GI_PPI_REASON_CODES.md  
-10) registry/GI_PPI_POLICY_REGISTRY.md  
+## AUTHORITY ORDER (HIGHEST → LOWEST)
 
-11) schemas/*.schema.json  
-12) lanes/*.md  
-13) examples/*.json  
+1. CORE_GI_PPI_CONSTITUTIONAL_STOP_LAYER.md
+2. CORE_GI_PPI_PLATFORM_CONSTITUTION.md
+3. GOVERNANCE_INDEX.md
+4. registry/GI_PPI_ENGINE_REGISTRY.md
+5. registry/GI_PPI_CAPABILITY_MATRIX.md
+6. registry/GI_PPI_REASON_CODES.md
+7. registry/GI_PPI_POLICY_REGISTRY.md
+8. schemas/*
+9. lanes/*
+10. examples/*
+11. implementation (non-binding)
 
-14) docs/*  
-15) engines/* (spec stubs only until IMPLEMENTED gates exist)
+Conflicts resolve upward immediately.
 
-## 2. Canonical Documents (Binding)
-
-### Governance Law
-- governance/GI_PPI_GENESIS_LAW.md
-- governance/GI_PPI_REFUSAL_SEMANTICS_LAW.md
-- governance/GI_PPI_AUDIT_AND_REPLAY_LAW.md
-- governance/GI_PPI_ENGINE_EXECUTION_BOUNDARY_LAW.md
-- governance/GI_PPI_POLICY_VERSIONING_LAW.md
-- governance/GI_PPI_CHANGE_CONTROL_LAW.md
-
-### Registries
-- registry/GI_PPI_ENGINE_REGISTRY.md
-- registry/GI_PPI_CAPABILITY_MATRIX.md
-- registry/GI_PPI_REASON_CODES.md
-- registry/GI_PPI_POLICY_REGISTRY.md
-
-### Schemas
-- schemas/PPI_REQUEST_V1.schema.json
-- schemas/PPI_DECISION_RECORD_V1.schema.json
-- schemas/PPI_POLICY_BUNDLE_V1.schema.json
-- schemas/PPI_RULE_NODE_V1.schema.json
-- schemas/PPI_STATE_MACHINE_V1.schema.json
-
-### Lane Specs
-- lanes/PPI_CORE_LANES.md
-- lanes/POLICY_GRAPH_LANES.md
-- lanes/STATE_MACHINE_LANES.md
-- lanes/AUDIT_LEDGER_LANES.md
-- lanes/ESCALATION_GATE_LANES.md
-
-### Examples
-- examples/POLICY_BUNDLE_V1.example.json
-- examples/REQUEST_V1.example.json
-- examples/DECISION_RECORD_V1.example.json
-- examples/STATE_MACHINE_V1.example.json
-
-### Build Gates
-- build_gates/DOCS_LOCK_CHECKLIST.md
-
-## 3. Final Clause
-
-If it is not indexed here, it is non-binding.
 Git is law.
