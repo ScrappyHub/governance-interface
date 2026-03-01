@@ -9,3 +9,9 @@ packets_*/
 supabase/
 key_export/
 _out/
+
+# keys (never commit)
+*.key
+*.pem
+key_export/
+
