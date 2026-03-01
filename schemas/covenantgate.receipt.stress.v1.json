@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "covenantgate.receipt.stress.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema","version","kind","started_utc","ended_utc","ok","iterations","inject_bad","bad_mode","out_dir_rel","stdout_sha256","stderr_sha256","exit_code","engine_sha256"],
+  "properties": {
+    "schema": {"const":"covenantgate.receipt.stress.v1"},
+    "version": {"type":"integer","const":1},
+    "kind": {"type":"string"},
+    "started_utc": {"type":"string"},
+    "ended_utc": {"type":"string"},
+    "ok": {"type":"boolean"},
+    "iterations": {"type":"integer","minimum":1},
+    "inject_bad": {"type":"boolean"},
+    "bad_mode": {"type":"string"},
+    "out_dir_rel": {"type":"string"},
+    "stdout_sha256": {"type":"string"},
+    "stderr_sha256": {"type":"string"},
+    "exit_code": {"type":"integer"},
+    "engine_sha256": {"type":"string"}
+  }
+}

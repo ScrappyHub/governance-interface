@@ -1,18 +1,11 @@
-﻿# Covenant Gate hygiene: keep non-product artifacts out of git
+# Covenant Gate hygiene: keep non-product artifacts out of git
 scripts/_scratch/
 proofs/
 _out/
 *.log
-# Covenant Gate hygiene
-scripts/_scratch/
-proofs/
-_out/
-*.log
-
 
 # Local artifacts
 packets_*/
 supabase/
 key_export/
 _out/
-

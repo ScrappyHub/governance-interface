@@ -1,0 +1,16 @@
+{
+  "schema": "covenantgate.reason_codes.v1",
+  "codes": [
+    { "code": "DEFAULT_DENY", "class": "decision", "description": "No allow matched; deny by default." },
+    { "code": "INPUT_SCHEMA_INVALID", "class": "input", "description": "Input failed JSON Schema validation." },
+    { "code": "POLICY_SCHEMA_INVALID", "class": "policy", "description": "Base policy failed JSON Schema validation." },
+    { "code": "OVERLAY_SCHEMA_INVALID", "class": "policy", "description": "Overlay policy failed JSON Schema validation." },
+    { "code": "OVERLAY_WIDEN_FORBIDDEN", "class": "policy", "description": "Overlay attempted to widen beyond base; hard fail." },
+    { "code": "DENY_RULE_MATCH:<rule_id>", "class": "rule", "description": "A deny rule matched. <rule_id> is the matching rule id." },
+    { "code": "ALLOW_RULE_MATCH:<rule_id>", "class": "rule", "description": "An allow rule matched. <rule_id> is the matching rule id." }
+  ],
+  "notes": [
+    "Reason codes are stable identifiers; no prose required for correctness.",
+    "If you add new codes later, bump the registry version and keep old codes valid."
+  ]
+}

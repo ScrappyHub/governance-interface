@@ -1,0 +1,1 @@
+{ "schema":"covenantgate.eval_input.v1","enforcement_point":"ingest.packet","subject":{"type":"packet"},"action":{"type":"ingest"},"resource":{"packet":{"producer":"covenant-gate"}} }

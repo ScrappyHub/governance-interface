@@ -1,0 +1,11 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"covenantgate.eval_output.v1.schema.json",
+  "type":"object",
+  "required":["schema","decision","reason_codes"],
+  "properties":{
+    "schema":{"const":"covenantgate.eval_output.v1"},
+    "decision":{"type":"string","enum":["allow","deny"]},
+    "reason_codes":{"type":"array"}
+  }
+}

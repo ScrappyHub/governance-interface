@@ -1,0 +1,11 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"covenantgate.policy.overlay.v1.schema.json",
+  "type":"object",
+  "required":["schema","version","tighten_only"],
+  "properties":{
+    "schema":{"const":"covenantgate.policy.overlay.v1"},
+    "version":{"type":"integer","const":1},
+    "tighten_only":{"type":"boolean","const":true}
+  }
+}

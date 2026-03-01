@@ -1,0 +1,14 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  ps51-tests:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run test vectors (PS5.1)
+        shell: powershell
+        run: |
+          powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File .\scripts\cg_run_test_vectors_v1.ps1 -RepoRoot "$PWD"

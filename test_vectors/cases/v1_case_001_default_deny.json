@@ -1,0 +1,1 @@
+{ "case_id":"v1_case_001_default_deny","base_policy":{"schema":"covenantgate.policy.base.v1","version":1,"defaults":{"default_decision":"deny"},"allow_rules":[],"deny_rules":[]},"eval_input":{"schema":"covenantgate.eval_input.v1","enforcement_point":"eval.request","subject":{"type":"thing"},"action":{"type":"do"},"resource":{}} }

@@ -1,0 +1,1 @@
+{ "schema":"covenantgate.policy.overlay.v1","version":1,"tighten_only":true,"deny_rules":[{"id":"deny.not.covenant.producer","effect":"deny","enforcement_points":["ingest.packet"],"when":{"op":"not","not":{"op":"eq","path":"/resource/packet/producer","value":"covenant-gate"}},"reason_codes":["DENY_NOT_COVENANT_PRODUCER"]}],"allow_constraints":[] }

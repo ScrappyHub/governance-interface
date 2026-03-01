@@ -1,0 +1,12 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"covenantgate.eval_input.v1.schema.json",
+  "type":"object",
+  "required":["schema","enforcement_point","subject","action"],
+  "properties":{
+    "schema":{"const":"covenantgate.eval_input.v1"},
+    "enforcement_point":{"type":"string"},
+    "subject":{"type":"object"},
+    "action":{"type":"object"}
+  }
+}

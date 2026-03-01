@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "covenantgate.policy.base.v1.schema.json",
+  "title": "Covenant Gate Policy Base v1",
+  "type": "object",
+  "required": ["schema","version","defaults","allow_rules","deny_rules"],
+  "properties": {
+    "schema": {"const":"covenantgate.policy.base.v1"},
+    "version": {"type":"integer","const":1},
+    "defaults": {
+      "type":"object",
+      "required":["default_decision"],
+      "properties":{
+        "default_decision":{"type":"string","enum":["deny"]}
+      }
+    },
+    "allow_rules":{"type":"array"},
+    "deny_rules":{"type":"array"}
+  }
+}
