@@ -1,0 +1,1 @@
+{"schema":"covenantgate.trust_bundle.v1","version":1,"signers":[{"principal":"single-tenant/example/authority/covenant-gate","key_id":"cg-dev-ed25519-1","pubkey":"ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEPF+pUT9PApTxnu93sxpbps2IpCFln1MU50qgACajEs covenant-gate","allowed_namespaces":["covenantgate/policy-bundle"]}]}
