@@ -62,7 +62,7 @@ function CG-JsonPointerGet($root,[string]$ptr,[ref]$found){
     $p = $raw.Replace("~1","/").Replace("~0","~")
     if($null -eq $cur){ return $null }
     if($cur -is [System.Collections.IDictionary]){ if($cur.Contains($p)){ $cur = $cur[$p]; continue } ; return $null }
-    if($cur -is [pscustomobject]){ if($cur.PSObject.Properties.Match($p).Count -gt 0){ $cur = $cur.$p; continue } ; return $null }
+    if($cur -is [pscustomobject]){ if(@(@($cur.PSObject.Properties.Match($p))).Count -gt 0){ $cur = $cur.$p; continue } ; return $null }
     if(($cur -is [System.Collections.IEnumerable]) -and -not ($cur -is [string])){
       $idx = -1; if(-not [int]::TryParse($p,[ref]$idx)){ return $null }
       $arr = @($cur); if($idx -lt 0 -or $idx -ge $arr.Count){ return $null }
@@ -78,30 +78,30 @@ function CG-CondValidate($c){
   if($null -eq $c){ return $false }
   if($c -isnot [pscustomobject] -and $c -isnot [System.Collections.IDictionary]){ return $false }
   $hasAll=$false; $hasAny=$false; $hasNot=$false; $hasOp=$false
-  if($c.PSObject.Properties.Match("all").Count -gt 0){ $hasAll=$true }
-  if($c.PSObject.Properties.Match("any").Count -gt 0){ $hasAny=$true }
-  if($c.PSObject.Properties.Match("not").Count -gt 0){ $hasNot=$true }
-  if($c.PSObject.Properties.Match("op").Count  -gt 0){ $hasOp=$true }
+  if(@(@($c.PSObject.Properties.Match("all"))).Count -gt 0){ $hasAll=$true }
+  if(@(@($c.PSObject.Properties.Match("any"))).Count -gt 0){ $hasAny=$true }
+  if(@(@($c.PSObject.Properties.Match("not"))).Count -gt 0){ $hasNot=$true }
+  if(@(@($c.PSObject.Properties.Match("op"))).Count -gt 0){ $hasOp=$true }
   $forms = @($hasAll,$hasAny,$hasNot,$hasOp) | Where-Object { $_ }
-  if($forms.Count -ne 1){ return $false }
-  if($hasAll){ $arr=@($c.all); if($arr.Count -lt 1){ return $false }; foreach($x in $arr){ if(-not (CG-CondValidate $x)){ return $false } }; return $true }
-  if($hasAny){ $arr=@($c.any); if($arr.Count -lt 1){ return $false }; foreach($x in $arr){ if(-not (CG-CondValidate $x)){ return $false } }; return $true }
+  if(@(@($forms)).Count -ne 1){ return $false }
+  if($hasAll){ $arr=@($c.all); if(@(@($arr)).Count -lt 1){ return $false }; foreach($x in $arr){ if(-not (CG-CondValidate $x)){ return $false } }; return $true }
+  if($hasAny){ $arr=@($c.any); if(@(@($arr)).Count -lt 1){ return $false }; foreach($x in $arr){ if(-not (CG-CondValidate $x)){ return $false } }; return $true }
   if($hasNot){ return (CG-CondValidate $c.not) }
   $op=[string]$c.op; $path=[string]$c.path
   if([string]::IsNullOrWhiteSpace($op) -or [string]::IsNullOrWhiteSpace($path)){ return $false }
   $allowed=@("exists","eq","in","starts_with","contains","lt","lte","gt","gte")
   if($allowed -notcontains $op){ return $false }
   if(-not ($path -match "^(/([^~/]|~0|~1)*)*$")){ return $false }
-  if($op -eq "in"){ if($c.PSObject.Properties.Match("values").Count -le 0){ return $false }; $vals=@($c.values); if($vals.Count -lt 1){ return $false } }
-  if(@("eq","starts_with","contains","lt","lte","gt","gte") -contains $op){ if($c.PSObject.Properties.Match("value").Count -le 0){ return $false } }
+  if($op -eq "in"){ if(@(@($c.PSObject.Properties.Match("values"))).Count -le 0){ return $false }; $vals=@($c.values); if(@(@($vals)).Count -lt 1){ return $false } }
+  if(@("eq","starts_with","contains","lt","lte","gt","gte") -contains $op){ if(@(@($c.PSObject.Properties.Match("value"))).Count -le 0){ return $false } }
   return $true
 }
 
 function CG-CondEval($input,$cond){
   if(-not (CG-CondValidate $cond)){ return $false }
-  if($cond.PSObject.Properties.Match("all").Count -gt 0){ foreach($x in @($cond.all)){ if(-not (CG-CondEval $input $x)){ return $false } }; return $true }
-  if($cond.PSObject.Properties.Match("any").Count -gt 0){ foreach($x in @($cond.any)){ if(CG-CondEval $input $x){ return $true } }; return $false }
-  if($cond.PSObject.Properties.Match("not").Count -gt 0){ return (-not (CG-CondEval $input $cond.not)) }
+  if(@(@($cond.PSObject.Properties.Match("all"))).Count -gt 0){ foreach($x in @($cond.all)){ if(-not (CG-CondEval $input $x)){ return $false } }; return $true }
+  if(@(@($cond.PSObject.Properties.Match("any"))).Count -gt 0){ foreach($x in @($cond.any)){ if(CG-CondEval $input $x){ return $true } }; return $false }
+  if(@(@($cond.PSObject.Properties.Match("not"))).Count -gt 0){ return (-not (CG-CondEval $input $cond.not)) }
   $op=[string]$cond.op; $path=[string]$cond.path; $found=$false
   $v = CG-JsonPointerGet $input $path ([ref]$found)
   if($op -eq "exists"){ return $found }
@@ -155,7 +155,7 @@ function CG-ValidateRuleCommon($r,[ref]$err){
   try{
     $id=[string]$r.id
     if([string]::IsNullOrWhiteSpace($id) -or -not ($id -match "^[a-z0-9][a-z0-9_.:-]{2,80}$")){ throw "RULE_ID_INVALID" }
-    $eps=@($r.enforcement_points); if($eps.Count -lt 1){ throw "RULE_ENFORCEMENT_POINTS_EMPTY" }
+    $eps=@($r.enforcement_points); if(@(@($eps)).Count -lt 1){ throw "RULE_ENFORCEMENT_POINTS_EMPTY" }
     $allowed=@("ingest.packet","policy.update.overlay","eval.request")
     foreach($e in $eps){ if($allowed -notcontains ([string]$e)){ throw "RULE_ENFORCEMENT_POINT_INVALID" } }
     if(-not (CG-CondValidate $r.when)){ throw "RULE_WHEN_INVALID" }
@@ -239,12 +239,12 @@ function CG-EvalV1($basePolicy,$overlayPolicy,$evalInput){
   $denyRules =@(@($eff.deny_rules)  | Where-Object { @($_.enforcement_points) -contains $ep } | Sort-Object { [string]$_.id })
   $constraints=@(@($eff.allow_constraints))
   $matchedDeny=@(); foreach($r in $denyRules){ if(CG-CondEval $evalInput $r.when){ $matchedDeny += ,([string]$r.id) } }
-  if($matchedDeny.Count -gt 0){
+  if(@(@($matchedDeny)).Count -gt 0){
     $md=@(@($matchedDeny)|Sort-Object); $reasons=@()
     foreach($id in $md){
       $reasons += ,("DENY_RULE_MATCH:"+$id)
       $rr = $denyRules | Where-Object { [string]$_.id -eq $id } | Select-Object -First 1
-      if($rr -and $rr.PSObject.Properties.Match("reason_codes").Count -gt 0){ foreach($rc in @(@($rr.reason_codes)|Sort-Object)){ $reasons += ,([string]$rc) } }
+      if($rr -and @(@($rr.PSObject.Properties.Match("reason_codes"))).Count -gt 0){ foreach($rc in @(@($rr.reason_codes)|Sort-Object)){ $reasons += ,([string]$rc) } }
     }
     return [pscustomobject]@{ schema="covenantgate.eval_output.v1"; decision="deny"; reason_codes=@($reasons); policy_hash=$ph; input_hash=$ih; engine_version=$engine; evaluation_id=$eid; matched_rules=@{allow=@();deny=@($md)} }
   }
@@ -253,12 +253,12 @@ function CG-EvalV1($basePolicy,$overlayPolicy,$evalInput){
     if(-not $ok){ continue }
     if(CG-CondEval $evalInput $r.when){ $matchedAllow += ,([string]$r.id) }
   }
-  if($matchedAllow.Count -gt 0){
+  if(@(@($matchedAllow)).Count -gt 0){
     $ma=@(@($matchedAllow)|Sort-Object); $reasons=@()
     foreach($id in $ma){
       $reasons += ,("ALLOW_RULE_MATCH:"+$id)
       $rr = $allowRules | Where-Object { [string]$_.id -eq $id } | Select-Object -First 1
-      if($rr -and $rr.PSObject.Properties.Match("reason_codes").Count -gt 0){ foreach($rc in @(@($rr.reason_codes)|Sort-Object)){ $reasons += ,([string]$rc) } }
+      if($rr -and @(@($rr.PSObject.Properties.Match("reason_codes"))).Count -gt 0){ foreach($rc in @(@($rr.reason_codes)|Sort-Object)){ $reasons += ,([string]$rc) } }
     }
     return [pscustomobject]@{ schema="covenantgate.eval_output.v1"; decision="allow"; reason_codes=@($reasons); policy_hash=$ph; input_hash=$ih; engine_version=$engine; evaluation_id=$eid; matched_rules=@{allow=@($ma);deny=@()} }
   }
@@ -270,12 +270,12 @@ function CG-ValidatePolicyBaseV1([object]$Policy,[ref]$Err){
   $Err.Value = $null
   try {
     if($null -eq $Policy){ $Err.Value = "POLICY_NULL"; return $false }
-    if($Policy.PSObject.Properties.Match("schema").Count -lt 1){ $Err.Value = "POLICY_SCHEMA_MISSING"; return $false }
+    if(@(@($Policy.PSObject.Properties.Match("schema"))).Count -lt 1){ $Err.Value = "POLICY_SCHEMA_MISSING"; return $false }
     if([string]$Policy.schema -ne "covenantgate.policy.base.v1"){ $Err.Value = "POLICY_SCHEMA_UNSUPPORTED:" + [string]$Policy.schema; return $false }
-    if($Policy.PSObject.Properties.Match("version").Count -lt 1){ $Err.Value = "POLICY_VERSION_MISSING"; return $false }
+    if(@(@($Policy.PSObject.Properties.Match("version"))).Count -lt 1){ $Err.Value = "POLICY_VERSION_MISSING"; return $false }
     if([int]$Policy.version -ne 1){ $Err.Value = "POLICY_VERSION_UNSUPPORTED:" + [string]$Policy.version; return $false }
-    if($Policy.PSObject.Properties.Match("defaults").Count -lt 1 -or $null -eq $Policy.defaults){ $Err.Value = "DEFAULTS_MISSING"; return $false }
-    if($Policy.defaults.PSObject.Properties.Match("default_decision").Count -lt 1){ $Err.Value = "DEFAULT_DECISION_MISSING"; return $false }
+    if(@(@($Policy.PSObject.Properties.Match("defaults"))).Count -lt 1 -or $null -eq $Policy.defaults){ $Err.Value = "DEFAULTS_MISSING"; return $false }
+    if(@(@($Policy.defaults.PSObject.Properties.Match("default_decision"))).Count -lt 1){ $Err.Value = "DEFAULT_DECISION_MISSING"; return $false }
     $dd = [string]$Policy.defaults.default_decision
     if($dd -ne "allow" -and $dd -ne "deny"){ $Err.Value = "DEFAULT_DECISION_INVALID:" + $dd; return $false }
 
@@ -284,17 +284,17 @@ function CG-ValidatePolicyBaseV1([object]$Policy,[ref]$Err){
 
     function _ValidateRule([object]$r,[string]$kind,[ref]$E){
       if($null -eq $r){ $E.Value = ($kind + "_RULE_NULL"); return $false }
-      if($r.PSObject.Properties.Match("id").Count -lt 1 -or [string]::IsNullOrWhiteSpace([string]$r.id)){ $E.Value = ($kind + "_RULE_ID_MISSING"); return $false }
-      if($r.PSObject.Properties.Match("effect").Count -lt 1){ $E.Value = ($kind + "_RULE_EFFECT_MISSING:" + [string]$r.id); return $false }
+      if(@(@($r.PSObject.Properties.Match("id"))).Count -lt 1 -or [string]::IsNullOrWhiteSpace([string]$r.id)){ $E.Value = ($kind + "_RULE_ID_MISSING"); return $false }
+      if(@(@($r.PSObject.Properties.Match("effect"))).Count -lt 1){ $E.Value = ($kind + "_RULE_EFFECT_MISSING:" + [string]$r.id); return $false }
       $eff = [string]$r.effect
       if($eff -ne "allow" -and $eff -ne "deny"){ $E.Value = ($kind + "_RULE_EFFECT_INVALID:" + [string]$r.id + ":" + $eff); return $false }
       $eps = @(@($r.enforcement_points))
-      if($eps.Count -lt 1){ $E.Value = ($kind + "_RULE_EP_EMPTY:" + [string]$r.id); return $false }
+      if(@(@($eps)).Count -lt 1){ $E.Value = ($kind + "_RULE_EP_EMPTY:" + [string]$r.id); return $false }
       foreach($ep in $eps){ if([string]::IsNullOrWhiteSpace([string]$ep)){ $E.Value = ($kind + "_RULE_EP_INVALID:" + [string]$r.id); return $false } }
-      if($r.PSObject.Properties.Match("when").Count -lt 1 -or $null -eq $r.when){ $E.Value = ($kind + "_RULE_WHEN_MISSING:" + [string]$r.id); return $false }
-      if($r.when.PSObject.Properties.Match("op").Count -lt 1 -or [string]::IsNullOrWhiteSpace([string]$r.when.op)){ $E.Value = ($kind + "_RULE_WHEN_OP_MISSING:" + [string]$r.id); return $false }
+      if(@(@($r.PSObject.Properties.Match("when"))).Count -lt 1 -or $null -eq $r.when){ $E.Value = ($kind + "_RULE_WHEN_MISSING:" + [string]$r.id); return $false }
+      if(@(@($r.when.PSObject.Properties.Match("op"))).Count -lt 1 -or [string]::IsNullOrWhiteSpace([string]$r.when.op)){ $E.Value = ($kind + "_RULE_WHEN_OP_MISSING:" + [string]$r.id); return $false }
       $rcs = @(@($r.reason_codes))
-      if($rcs.Count -lt 1){ $E.Value = ($kind + "_RULE_REASON_CODES_EMPTY:" + [string]$r.id); return $false }
+      if(@(@($rcs)).Count -lt 1){ $E.Value = ($kind + "_RULE_REASON_CODES_EMPTY:" + [string]$r.id); return $false }
       foreach($rc in $rcs){ if([string]::IsNullOrWhiteSpace([string]$rc)){ $E.Value = ($kind + "_RULE_REASON_CODE_INVALID:" + [string]$r.id); return $false } }
       return $true
     }

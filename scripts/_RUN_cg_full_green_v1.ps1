@@ -53,7 +53,7 @@ function Sha256-HexFile([string]$Path){
   $sb.ToString()
 }
 
-function Run-ChildPs([string]$File,[string[]]$Args,[string]$Label,[string]$BundleDir){
+function Run-ChildPs([string]$File,[string[]]$ChildArgs,[string]$Label,[string]$BundleDir){
   if(-not (Test-Path -LiteralPath $File -PathType Leaf)){
     Die ("MISSING_SCRIPT: " + $File)
   }
@@ -62,22 +62,59 @@ function Run-ChildPs([string]$File,[string[]]$Args,[string]$Label,[string]$Bundl
   $stdoutPath = Join-Path $BundleDir ($Label + ".stdout.txt")
   $stderrPath = Join-Path $BundleDir ($Label + ".stderr.txt")
 
-  if(Test-Path -LiteralPath $stdoutPath -PathType Leaf){ Remove-Item -LiteralPath $stdoutPath -Force }
-  if(Test-Path -LiteralPath $stderrPath -PathType Leaf){ Remove-Item -LiteralPath $stderrPath -Force }
+  if(Test-Path -LiteralPath $stdoutPath -PathType Leaf){
+    Remove-Item -LiteralPath $stdoutPath -Force
+  }
+  if(Test-Path -LiteralPath $stderrPath -PathType Leaf){
+    Remove-Item -LiteralPath $stderrPath -Force
+  }
 
-  $argList = @("-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass","-File",$File) + $Args
+  $argList = @(
+    "-NoProfile",
+    "-NonInteractive",
+    "-ExecutionPolicy","Bypass",
+    "-File",$File
+  ) + @($ChildArgs)
 
-  $p = Start-Process -FilePath $PSExe -ArgumentList $argList -NoNewWindow -PassThru -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+  $p = Start-Process -FilePath $PSExe `
+    -ArgumentList $argList `
+    -NoNewWindow `
+    -PassThru `
+    -RedirectStandardOutput $stdoutPath `
+    -RedirectStandardError $stderrPath
+
   if(-not $p.WaitForExit(300000)){
     try { $p.Kill() } catch {}
     Die ("RUN_TIMEOUT: " + $Label)
   }
 
-  [pscustomobject]@{
+  $stderrText = ""
+  if(Test-Path -LiteralPath $stderrPath -PathType Leaf){
+    $stderrText = Get-Content -LiteralPath $stderrPath -Raw
+  }
+
+  $stderrHasHardError = $false
+  if(-not [string]::IsNullOrWhiteSpace($stderrText)){
+    if(
+      $stderrText.Contains("Cannot bind parameter") -or
+      $stderrText.Contains("Exception") -or
+      $stderrText.Contains("ASSERT_FAIL") -or
+      $stderrText.Contains("PARSE_GATE_FAIL") -or
+      $stderrText.Contains("FullyQualifiedErrorId") -or
+      $stderrText.Contains(": Cannot")
+    ){
+      $stderrHasHardError = $true
+    }
+  }
+
+  $ok = (([int]$p.ExitCode -eq 0) -and (-not $stderrHasHardError))
+
+  return [pscustomobject]@{
     type = "covenantgate.run.receipt.v1"
     label = $Label
-    ok = ($p.ExitCode -eq 0)
+    ok = $ok
     exit_code = [int]$p.ExitCode
+    stderr_has_hard_error = $stderrHasHardError
     script = $File
     stdout = $stdoutPath
     stderr = $stderrPath
@@ -123,21 +160,43 @@ $ShaFile       = Join-Path $BundleDir "sha256sums.txt"
 
 $receipts = New-Object System.Collections.Generic.List[object]
 
+function Assert-StepOk($r){
+  if($r.ok){ return }
+
+  Write-Host ("STEP_FAIL: " + $r.label) -ForegroundColor Red
+
+  if(Test-Path -LiteralPath $r.stdout -PathType Leaf){
+    Write-Host ("===== " + $r.label + ".stdout =====") -ForegroundColor Yellow
+    Get-Content -LiteralPath $r.stdout | Out-Host
+  } else {
+    Write-Host ("MISSING_STDOUT: " + $r.stdout) -ForegroundColor DarkYellow
+  }
+
+  if(Test-Path -LiteralPath $r.stderr -PathType Leaf){
+    Write-Host ("===== " + $r.label + ".stderr =====") -ForegroundColor Yellow
+    Get-Content -LiteralPath $r.stderr | Out-Host
+  } else {
+    Write-Host ("MISSING_STDERR: " + $r.stderr) -ForegroundColor DarkYellow
+  }
+
+  Die ("STEP_FAIL: " + $r.label)
+}
+
 $r1 = Run-ChildPs (Join-Path $ScriptsDir "cg_run_test_vectors_v1.ps1") @("-RepoRoot",$RepoRoot) "test_vectors" $BundleDir
 [void]$receipts.Add($r1)
-if(-not $r1.ok){ Die ("STEP_FAIL: " + $r1.label) }
+Assert-StepOk $r1
 
 $r2 = Run-ChildPs (Join-Path $ScriptsDir "selftest_cg_stress_negative_v1.ps1") @("-RepoRoot",$RepoRoot) "stress_negative" $BundleDir
 [void]$receipts.Add($r2)
-if(-not $r2.ok){ Die ("STEP_FAIL: " + $r2.label) }
+Assert-StepOk $r2
 
 $r3 = Run-ChildPs (Join-Path $ScriptsDir "_selftest_cg_sig_stack_v1.ps1") @("-RepoRoot",$RepoRoot) "sig_stack" $BundleDir
 [void]$receipts.Add($r3)
-if(-not $r3.ok){ Die ("STEP_FAIL: " + $r3.label) }
+Assert-StepOk $r3
 
 $r4 = Run-ChildPs (Join-Path $ScriptsDir "_selftest_cg_conversation_layer_v1.ps1") @("-RepoRoot",$RepoRoot) "conversation_layer" $BundleDir
 [void]$receipts.Add($r4)
-if(-not $r4.ok){ Die ("STEP_FAIL: " + $r4.label) }
+Assert-StepOk $r4
 
 $summary = [ordered]@{
   type = "covenantgate.full_green.v1"
