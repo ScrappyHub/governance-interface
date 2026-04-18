@@ -1,25 +1,44 @@
-# Covenant Gate — Policy + Evaluation Spec Pack (v1)
+# Covenant Gate
 
-This repository defines the **standalone, deterministic policy + evaluation contract** for Covenant Gate.
+Deterministic governance and policy evaluation engine.
 
-It is intended to be:
-- **standalone-first** (ship Covenant Gate without ecosystem dependencies)
-- **integration-ready later** (ecosystem integration must consume this contract, not rewrite it)
+## What it is
 
-## What’s in here
-- Policy Base v1 format
-- Policy Overlay v1 format (tighten-only)
-- Reason code registry v1
-- JSON Schemas
-- Example policies and eval I/O
-- Test vector format (golden vectors)
+Covenant Gate is a local-first policy engine for systems that require:
 
-## Non-goals (v1)
-- No regex
-- No network/filesystem side effects in evaluation
-- No AI/heuristics in decision-making
+- deterministic policy evaluation
+- explicit allow and deny behavior
+- signed policy bundle verification
+- auditable receipts and repeatable evidence
+- strict machine-readable inputs and outputs
 
-## Canonical rule
-Evaluator is authoritative. UIs (including chatbot) must *reflect* evaluator output and must not invent decisions.
+It is designed for environments where governance logic must be inspectable, reproducible, and verifiable.
 
-See: SPEC_POLICY_EVAL_V1.md
+## What users can do
+
+- evaluate structured policy inputs
+- verify signed policy bundles
+- run deterministic selftests
+- generate reproducible evidence
+- integrate governance into systems
+
+## What problem it solves
+
+Replaces scattered governance logic with:
+
+- versioned policy rules
+- deterministic evaluation
+- explicit allow/deny outcomes
+- auditable execution
+
+## Run
+
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File .\scripts\_RUN_cg_full_green_v1.ps1 `
+  -RepoRoot .
+
+## Output
+
+- deterministic receipts
+- reproducible transcripts
+- explicit PASS / FAIL tokens
