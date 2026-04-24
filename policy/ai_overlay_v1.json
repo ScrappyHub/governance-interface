@@ -1,0 +1,48 @@
+{
+  "schema": "covenantgate.ai_overlay.v1",
+  "version": 1,
+  "rules": [
+    {
+      "rule_id": "deny_destructive_intent",
+      "match": {
+        "classified_intent": "destructive"
+      },
+      "decision": "deny",
+      "reason_codes": [
+        "DESTRUCTIVE_INTENT",
+        "CONFIRMATION_REQUIRED"
+      ]
+    },
+    {
+      "rule_id": "deny_critical_risk",
+      "match": {
+        "risk_level": "critical"
+      },
+      "decision": "deny",
+      "reason_codes": [
+        "CRITICAL_RISK"
+      ]
+    },
+    {
+      "rule_id": "require_confirmation_when_classifier_requires_it",
+      "match": {
+        "requires_confirmation": true
+      },
+      "decision": "deny_without_confirm_token",
+      "reason_codes": [
+        "CONFIRMATION_REQUIRED"
+      ]
+    },
+    {
+      "rule_id": "allow_operational_medium_risk",
+      "match": {
+        "classified_intent": "operational",
+        "risk_level": "medium"
+      },
+      "decision": "allow",
+      "reason_codes": [
+        "OPERATIONAL_INTENT_GOVERNED"
+      ]
+    }
+  ]
+}

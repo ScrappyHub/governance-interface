@@ -13,6 +13,14 @@ $RepoRoot = (Resolve-Path $RepoRoot).Path
 $InputPath = (Resolve-Path $InputPath).Path
 if([string]::IsNullOrWhiteSpace($OutDir)){ $OutDir = Join-Path $RepoRoot "proofs\receipts\cg_execution_policy_bridge" }
 
+$ReasonLib = Join-Path $RepoRoot "scripts\_lib_cg_reason_normalize_v1.ps1"
+$OverlayPath = Join-Path $RepoRoot "policy\ai_overlay_v1.json"
+
+if(-not (Test-Path -LiteralPath $ReasonLib -PathType Leaf)){ throw ("MISSING_REASON_LIB: " + $ReasonLib) }
+if(-not (Test-Path -LiteralPath $OverlayPath -PathType Leaf)){ throw ("MISSING_AI_OVERLAY: " + $OverlayPath) }
+
+. $ReasonLib
+
 function Ensure-Dir([string]$p){
   if([string]::IsNullOrWhiteSpace($p)){ throw "ENSURE_DIR_EMPTY" }
   if(-not (Test-Path -LiteralPath $p -PathType Container)){ New-Item -ItemType Directory -Force -Path $p | Out-Null }
@@ -43,10 +51,26 @@ function Sha256Text([string]$Text){
   try { return ([BitConverter]::ToString($sha.ComputeHash($bytes))).Replace("-","").ToLowerInvariant() }
   finally { $sha.Dispose() }
 }
+function Match-OverlayRule($Rule,[string]$Intent,[string]$Risk,[bool]$NeedsConfirm){
+  $match = Get-Prop $Rule "match"
+  if($null -eq $match){ return $false }
+
+  $mi = Get-Prop $match "classified_intent"
+  $mr = Get-Prop $match "risk_level"
+  $mc = Get-Prop $match "requires_confirmation"
+
+  if($null -ne $mi -and [string]$mi -ne $Intent){ return $false }
+  if($null -ne $mr -and [string]$mr -ne $Risk){ return $false }
+  if($null -ne $mc -and [bool]$mc -ne $NeedsConfirm){ return $false }
+
+  return $true
+}
 
 Ensure-Dir $OutDir
 
 $case = Read-Json $InputPath
+$overlay = Read-Json $OverlayPath
+
 $eval = Get-Prop $case "eval_input"
 $base = Get-Prop $case "base_policy"
 
@@ -60,8 +84,8 @@ if($null -eq $needsConfirm){ $needsConfirm = $false }
 
 $decision = "allow"
 $reasons = New-Object System.Collections.Generic.List[string]
+$matchedRules = New-Object System.Collections.Generic.List[string]
 
-# Pull existing reason codes from input policy first.
 if($null -ne $base){
   foreach($rule in @($base.rules)){
     foreach($r in @($rule.reason_codes)){
@@ -70,45 +94,45 @@ if($null -ne $base){
   }
 }
 
-if($intent -eq "destructive"){
-  $decision = "deny"
-  $reasons.Add("BRIDGE_BLOCKED_DESTRUCTIVE_INTENT") | Out-Null
-}
+foreach($rule in @($overlay.rules)){
+  if(Match-OverlayRule $rule $intent $risk ([bool]$needsConfirm)){
+    $rid = [string](Get-Prop $rule "rule_id")
+    if(-not [string]::IsNullOrWhiteSpace($rid)){ $matchedRules.Add($rid) | Out-Null }
 
-if($risk -eq "critical"){
-  $decision = "deny"
-  $reasons.Add("BRIDGE_BLOCKED_CRITICAL_RISK") | Out-Null
-}
+    $rd = [string](Get-Prop $rule "decision")
+    foreach($r in @($rule.reason_codes)){
+      if(-not [string]::IsNullOrWhiteSpace([string]$r)){ $reasons.Add([string]$r) | Out-Null }
+    }
 
-if([bool]$needsConfirm -eq $true){
-  if($ConfirmToken -ne "I_UNDERSTAND_DESTRUCTIVE_ACTION"){
-    $decision = "deny"
-    $reasons.Add("BRIDGE_CONFIRMATION_REQUIRED") | Out-Null
+    if($rd -eq "deny"){
+      $decision = "deny"
+    }
+    elseif($rd -eq "deny_without_confirm_token"){
+      if($ConfirmToken -ne "I_UNDERSTAND_DESTRUCTIVE_ACTION"){ $decision = "deny" }
+    }
+    elseif($rd -eq "allow"){
+      if($decision -ne "deny"){ $decision = "allow" }
+    }
   }
 }
 
-if($Action -eq "destructive"){
-  if($ConfirmToken -ne "I_UNDERSTAND_DESTRUCTIVE_ACTION"){
-    $decision = "deny"
-    $reasons.Add("DESTRUCTIVE_ACTION_REQUIRES_CONFIRMATION") | Out-Null
-  }
+if($Action -eq "destructive" -and $ConfirmToken -ne "I_UNDERSTAND_DESTRUCTIVE_ACTION"){
+  $decision = "deny"
+  $reasons.Add("CONFIRMATION_REQUIRED") | Out-Null
 }
 
 if($Action -eq "commit" -and $risk -eq "critical"){
   $decision = "deny"
-  $reasons.Add("COMMIT_BLOCKED_CRITICAL_RISK") | Out-Null
+  $reasons.Add("CRITICAL_RISK") | Out-Null
 }
 
 if($Action -eq "apply" -and ($risk -eq "critical" -or $intent -eq "destructive")){
   $decision = "deny"
-  $reasons.Add("APPLY_BLOCKED_BY_AI_RISK") | Out-Null
+  $reasons.Add("CRITICAL_RISK") | Out-Null
 }
 
-if($Action -eq "export" -and $decision -ne "allow"){
-  $reasons.Add("EXPORT_BRIDGE_WARNING") | Out-Null
-}
-
-$reasonText = (@($reasons.ToArray()) | Sort-Object -Unique) -join ","
+$normalizedReasons = @(CG-NormalizeReasonCodes -ReasonCodes @($reasons.ToArray()))
+$reasonText = (@($normalizedReasons) | Sort-Object -Unique) -join ","
 $runId = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss_fffZ")
 
 $result = [ordered]@{
@@ -117,11 +141,14 @@ $result = [ordered]@{
   action = $Action
   input_path = $InputPath
   input_sha256 = Sha256Text (Get-Content -LiteralPath $InputPath -Raw)
+  overlay_path = $OverlayPath
+  overlay_sha256 = Sha256Text (Get-Content -LiteralPath $OverlayPath -Raw)
+  matched_rules = @(@($matchedRules.ToArray()))
   classified_intent = $intent
   risk_level = $risk
   requires_confirmation = [bool]$needsConfirm
   decision = $decision
-  reason_codes = @(@($reasons.ToArray()) | Sort-Object -Unique)
+  reason_codes = @(@($normalizedReasons))
 }
 
 $outPath = Join-Path $OutDir ("cg_execution_policy_bridge_" + $runId + ".json")
