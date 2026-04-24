@@ -136,6 +136,26 @@ if(@($missingAssets).Count -gt 0){
   $reasons.Add("REPO_GOVERNANCE_ASSETS_MISSING") | Out-Null
 }
 
+$missingAssets = @()
+if($null -ne $eval){
+  $missingRaw = Get-Prop $eval "missing"
+  if($null -ne $missingRaw){
+    foreach($m in @($missingRaw)){
+      if(-not [string]::IsNullOrWhiteSpace([string]$m)){
+        $missingAssets += [string]$m
+      }
+    }
+  }
+}
+
+if(@($missingAssets).Count -gt 0){
+  $decision = "deny"
+  foreach($m in @($missingAssets)){
+    $reasons.Add(("MISSING_" + ([string]$m).ToUpperInvariant())) | Out-Null
+  }
+  $reasons.Add("REPO_GOVERNANCE_ASSETS_MISSING") | Out-Null
+}
+
 if($Action -eq "destructive" -and $ConfirmToken -ne "I_UNDERSTAND_DESTRUCTIVE_ACTION"){
   $decision = "deny"
   $reasons.Add("CONFIRMATION_REQUIRED") | Out-Null
