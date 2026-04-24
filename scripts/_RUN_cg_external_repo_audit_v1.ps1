@@ -9,13 +9,12 @@ $ErrorActionPreference = "Stop"
 $RepoRoot   = (Resolve-Path $RepoRoot).Path
 $TargetRepo = (Resolve-Path $TargetRepo).Path
 
-$Intake  = Join-Path $RepoRoot "scripts\cg_intake_repo_v1.ps1"
-$Watch   = Join-Path $RepoRoot "scripts\_RUN_cg_watch_loop_v1.ps1"
-$Bridge  = Join-Path $RepoRoot "scripts\cg_execution_policy_bridge_v1.ps1"
+$Intake = Join-Path $RepoRoot "scripts\cg_intake_repo_v1.ps1"
+$Watch  = Join-Path $RepoRoot "scripts\_RUN_cg_watch_loop_v1.ps1"
+$Bridge = Join-Path $RepoRoot "scripts\cg_execution_policy_bridge_v1.ps1"
 
-$RunId   = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss_fffZ")
-$OutRoot = Join-Path $RepoRoot "proofs\receipts\cg_external_repo_audit"
-$Bundle  = Join-Path $OutRoot $RunId
+$RunId    = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss_fffZ")
+$Bundle   = Join-Path (Join-Path $RepoRoot "proofs\receipts\cg_external_repo_audit") $RunId
 $InputDir = Join-Path $Bundle "watch_inputs"
 
 function Ensure-Dir([string]$p){
@@ -24,27 +23,26 @@ function Ensure-Dir([string]$p){
     New-Item -ItemType Directory -Force -Path $p | Out-Null
   }
 }
-
 function Write-Utf8NoBomLf([string]$Path,[string]$Text){
   $enc = New-Object System.Text.UTF8Encoding($false)
-  $lf  = ($Text -replace "`r`n","`n") -replace "`r","`n"
+  $lf = ($Text -replace "`r`n","`n") -replace "`r","`n"
   if(-not $lf.EndsWith("`n")){ $lf += "`n" }
   $dir = Split-Path -Parent $Path
   if($dir){ Ensure-Dir $dir }
   [System.IO.File]::WriteAllText($Path,$lf,$enc)
 }
-
 function Read-Text([string]$Path){
   if(-not (Test-Path -LiteralPath $Path -PathType Leaf)){ throw ("MISSING_FILE: " + $Path) }
   return [System.IO.File]::ReadAllText($Path,(New-Object System.Text.UTF8Encoding($false)))
 }
-
 function Sha256File([string]$Path){
   return (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant()
 }
 
 foreach($p in @($Intake,$Watch,$Bridge)){
-  if(-not (Test-Path -LiteralPath $p -PathType Leaf)){ throw ("MISSING_REQUIRED_SCRIPT: " + $p) }
+  if(-not (Test-Path -LiteralPath $p -PathType Leaf)){
+    throw ("MISSING_REQUIRED_SCRIPT: " + $p)
+  }
 }
 
 Ensure-Dir $Bundle
@@ -59,59 +57,50 @@ $watchErr  = Join-Path $Bundle "watch.stderr.txt"
 $bridgeOut = Join-Path $Bundle "bridge.stdout.txt"
 $bridgeErr = Join-Path $Bundle "bridge.stderr.txt"
 
-$p1 = Start-Process -FilePath $PSExe `
-  -ArgumentList @(
-    "-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass",
-    "-File",$Intake,
-    "-RepoRoot",$RepoRoot,
-    "-TargetRepo",$TargetRepo,
-    "-OutDir",$InputDir
-  ) `
-  -NoNewWindow `
-  -PassThru `
-  -RedirectStandardOutput $intakeOut `
-  -RedirectStandardError $intakeErr
+& $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File $Intake `
+  -RepoRoot $RepoRoot `
+  -TargetRepo $TargetRepo `
+  -OutDir $InputDir `
+  > $intakeOut 2> $intakeErr
 
-$p1.WaitForExit()
-if($p1.ExitCode -ne 0){ throw ("INTAKE_FAILED: " + $p1.ExitCode) }
+$intakeExit = $LASTEXITCODE
+if($intakeExit -ne 0){
+  Get-Content -LiteralPath $intakeOut -ErrorAction SilentlyContinue | Out-Host
+  Get-Content -LiteralPath $intakeErr -ErrorAction SilentlyContinue | Out-Host
+  throw ("INTAKE_FAILED: " + $intakeExit)
+}
 
 $inputs = @(@(Get-ChildItem -LiteralPath $InputDir -Filter "*.json" -File) | Sort-Object FullName)
 if(@(@($inputs)).Count -lt 1){ throw "NO_INTAKE_WATCH_INPUTS" }
-
-$p2 = Start-Process -FilePath $PSExe `
-  -ArgumentList @(
-    "-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass",
-    "-File",$Watch,
-    "-RepoRoot",$RepoRoot,
-    "-Mode","run-once"
-  ) `
-  -NoNewWindow `
-  -PassThru `
-  -RedirectStandardOutput $watchOut `
-  -RedirectStandardError $watchErr
-
-$p2.WaitForExit()
-if($p2.ExitCode -ne 0){ throw ("WATCH_RUN_ONCE_FAILED: " + $p2.ExitCode) }
-
 $latestInput = $inputs[@(@($inputs)).Count-1].FullName
 
-$p3 = Start-Process -FilePath $PSExe `
-  -ArgumentList @(
-    "-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass",
-    "-File",$Bridge,
-    "-RepoRoot",$RepoRoot,
-    "-Action","export",
-    "-InputPath",$latestInput,
-    "-OutDir",$Bundle
-  ) `
-  -NoNewWindow `
-  -PassThru `
-  -RedirectStandardOutput $bridgeOut `
-  -RedirectStandardError $bridgeErr
+& $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File $Watch `
+  -RepoRoot $RepoRoot `
+  -Mode run-once `
+  > $watchOut 2> $watchErr
 
-$p3.WaitForExit()
-if(($p3.ExitCode -ne 0) -and ($p3.ExitCode -ne 2)){
-  throw ("BRIDGE_UNEXPECTED_EXIT: " + $p3.ExitCode)
+$watchExit = $LASTEXITCODE
+if($watchExit -ne 0){
+  Get-Content -LiteralPath $watchOut -ErrorAction SilentlyContinue | Out-Host
+  Get-Content -LiteralPath $watchErr -ErrorAction SilentlyContinue | Out-Host
+  throw ("WATCH_RUN_ONCE_FAILED: " + $watchExit)
+}
+
+& $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File $Bridge `
+  -RepoRoot $RepoRoot `
+  -Action export `
+  -InputPath $latestInput `
+  -OutDir $Bundle `
+  > $bridgeOut 2> $bridgeErr
+
+$bridgeExit = $LASTEXITCODE
+if(($bridgeExit -ne 0) -and ($bridgeExit -ne 2)){
+  Get-Content -LiteralPath $bridgeOut -ErrorAction SilentlyContinue | Out-Host
+  Get-Content -LiteralPath $bridgeErr -ErrorAction SilentlyContinue | Out-Host
+  throw ("BRIDGE_UNEXPECTED_EXIT: " + $bridgeExit)
 }
 
 $inputObj = Read-Text $latestInput | ConvertFrom-Json -ErrorAction Stop
@@ -133,9 +122,9 @@ $summary = [ordered]@{
   asset_count = $assetCount
   missing_count = $missingCount
   bridge_decision = $bridgeDecision
-  intake_exit_code = $p1.ExitCode
-  watch_exit_code = $p2.ExitCode
-  bridge_exit_code = $p3.ExitCode
+  intake_exit_code = $intakeExit
+  watch_exit_code = $watchExit
+  bridge_exit_code = $bridgeExit
   status = "OK"
 }
 
