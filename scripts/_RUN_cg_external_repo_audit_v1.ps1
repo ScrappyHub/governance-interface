@@ -105,12 +105,48 @@ if(($bridgeExit -ne 0) -and ($bridgeExit -ne 2)){
 
 $inputObj = Read-Text $latestInput | ConvertFrom-Json -ErrorAction Stop
 $assetCount = @(@($inputObj.eval_input.assets)).Count
-$missingCount = @(@($inputObj.eval_input.missing)).Count
+$missingItems = @(@($inputObj.eval_input.missing))
+$missingCount = @($missingItems).Count
+
+$intakeDecision = "unknown"
+$intakeReasonCodes = @()
+foreach($rule in @($inputObj.base_policy.rules)){
+  if(-not [string]::IsNullOrWhiteSpace([string]$rule.decision)){ $intakeDecision = [string]$rule.decision }
+  foreach($r in @($rule.reason_codes)){
+    if(-not [string]::IsNullOrWhiteSpace([string]$r)){ $intakeReasonCodes += [string]$r }
+  }
+}
+$intakeReasonCodes = @($intakeReasonCodes | Sort-Object -Unique)
 
 $bridgeText = Read-Text $bridgeOut
 $bridgeDecision = "unknown"
+$bridgeReasonCodes = @()
 if($bridgeText -match "CG_EXECUTION_BRIDGE_DECISION:\s*allow"){ $bridgeDecision = "allow" }
 if($bridgeText -match "CG_EXECUTION_BRIDGE_DECISION:\s*deny"){ $bridgeDecision = "deny" }
+foreach($line in @($bridgeText -split "`n")){
+  if($line -match "^CG_EXECUTION_BRIDGE_REASON_CODES:\s*(.*)$"){
+    $rawReasons = $Matches[1]
+    foreach($r in @($rawReasons -split ",")){
+      if(-not [string]::IsNullOrWhiteSpace($r)){ $bridgeReasonCodes += $r.Trim() }
+    }
+  }
+}
+$bridgeReasonCodes = @($bridgeReasonCodes | Sort-Object -Unique)
+
+$events = @(
+  "EXTERNAL_REPO_AUDIT_STARTED",
+  "INTAKE_SCANNED_REPO",
+  ("GOVERNANCE_ASSETS_FOUND:" + $assetCount),
+  ("GOVERNANCE_ASSETS_MISSING:" + $missingCount),
+  "WATCH_INPUT_CREATED",
+  "WATCH_EVAL_RAN",
+  "EXECUTION_BRIDGE_EVALUATED"
+)
+if($bridgeDecision -eq "allow"){
+  $events += "EXPORT_GOVERNED_ALLOW"
+} else {
+  $events += "EXPORT_GOVERNED_DENY"
+}
 
 $summary = [ordered]@{
   schema = "covenantgate.external_repo_audit.v1"
@@ -121,7 +157,12 @@ $summary = [ordered]@{
   intake_input_sha256 = Sha256File $latestInput
   asset_count = $assetCount
   missing_count = $missingCount
+  missing = @($missingItems)
+  intake_decision = $intakeDecision
+  intake_reason_codes = @($intakeReasonCodes)
   bridge_decision = $bridgeDecision
+  bridge_reason_codes = @($bridgeReasonCodes)
+  events = @($events)
   intake_exit_code = $intakeExit
   watch_exit_code = $watchExit
   bridge_exit_code = $bridgeExit
@@ -146,5 +187,9 @@ Write-Host ("CG_EXTERNAL_REPO_AUDIT_BUNDLE: " + $Bundle) -ForegroundColor Cyan
 Write-Host ("CG_EXTERNAL_REPO_AUDIT_TARGET: " + $TargetRepo)
 Write-Host ("CG_EXTERNAL_REPO_AUDIT_ASSETS: " + $assetCount)
 Write-Host ("CG_EXTERNAL_REPO_AUDIT_MISSING: " + $missingCount)
+Write-Host ("CG_EXTERNAL_REPO_AUDIT_INTAKE_DECISION: " + $intakeDecision)
+Write-Host ("CG_EXTERNAL_REPO_AUDIT_INTAKE_REASON_CODES: " + (@($intakeReasonCodes) -join ","))
 Write-Host ("CG_EXTERNAL_REPO_AUDIT_BRIDGE_DECISION: " + $bridgeDecision)
+Write-Host ("CG_EXTERNAL_REPO_AUDIT_BRIDGE_REASON_CODES: " + (@($bridgeReasonCodes) -join ","))
+Write-Host ("CG_EXTERNAL_REPO_AUDIT_EVENTS: " + (@($events) -join " | "))
 Write-Host "CG_EXTERNAL_REPO_AUDIT_OK" -ForegroundColor Green
