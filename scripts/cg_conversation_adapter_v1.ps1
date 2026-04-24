@@ -116,7 +116,8 @@ $case = [ordered]@{
   }
 }
 
-$outPath = Join-Path $OutDir ("conversation_adapter_" + (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmssZ") + ".json")
+$tsOut = (Get-Date).ToUniversalTime().ToString("yyyyMMdd_HHmmss_fffZ")
+$outPath = Join-Path $OutDir ("conversation_adapter_" + $tsOut + ".json")
 Write-Utf8NoBomLf $outPath (($case | ConvertTo-Json -Depth 50 -Compress))
 
 Write-Host ("CG_CONVERSATION_ADAPTER_OUTPUT: " + $outPath) -ForegroundColor Cyan
