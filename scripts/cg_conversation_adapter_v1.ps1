@@ -55,11 +55,26 @@ if($Mode -eq "external-file"){
   $response = [System.IO.File]::ReadAllText($ExternalResponsePath,(New-Object System.Text.UTF8Encoding($false)))
 }
 
+$Classifier = Join-Path $RepoRoot "scripts\cg_ai_intent_classifier_v1.ps1"
+if(-not (Test-Path -LiteralPath $Classifier -PathType Leaf)){ throw ("MISSING_CLASSIFIER: " + $Classifier) }
+
+$PSExe = (Get-Command powershell.exe -ErrorAction Stop).Source
+$classifierJson = & $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Classifier -Text ($Prompt + "`n" + $response)
+if($LASTEXITCODE -ne 0){ throw ("CLASSIFIER_EXIT_NONZERO: " + $LASTEXITCODE) }
+$classifier = ($classifierJson | ConvertFrom-Json -ErrorAction Stop)
+
 $promptHash = Sha256Text $Prompt
 $responseHash = Sha256Text $response
 
 $decision = "allow"
 $reasons = New-Object System.Collections.Generic.List[string]
+foreach($cr in @(@($classifier.reason_codes))){
+  if(-not [string]::IsNullOrWhiteSpace([string]$cr)){ $reasons.Add([string]$cr) | Out-Null }
+}
+if([bool]$classifier.requires_confirmation -eq $true){
+  $decision = "deny"
+  $reasons.Add("CLASSIFIER_REQUIRES_CONFIRMATION") | Out-Null
+}
 
 if($response -match "destructive|delete|format|wipe|destroy"){
   $decision = "deny"
@@ -92,6 +107,10 @@ $case = [ordered]@{
     mode = $Mode
     prompt_sha256 = $promptHash
     response_sha256 = $responseHash
+    classified_intent = [string]$classifier.intent
+    risk_level = [string]$classifier.risk_level
+    confidence = [string]$classifier.confidence
+    requires_confirmation = [bool]$classifier.requires_confirmation
     prompt_preview = $Prompt.Substring(0,[Math]::Min(160,$Prompt.Length))
     response_preview = $response.Substring(0,[Math]::Min(240,$response.Length))
   }
