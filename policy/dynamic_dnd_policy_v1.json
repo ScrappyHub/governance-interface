@@ -1,0 +1,43 @@
+{
+  "schema": "covenantgate.dynamic_dnd_policy.v1",
+  "version": 1,
+  "description": "Context-aware Do Not Do rules evaluated before governed actions.",
+  "rules": [
+    {
+      "rule_id": "dynamic_dnd_missing_governance_blocks_execution",
+      "when": { "missing_count_gt": 0 },
+      "decision": "deny",
+      "reason_codes": ["DND_DYNAMIC_MISSING_GOVERNANCE"]
+    },
+    {
+      "rule_id": "dynamic_dnd_critical_risk_blocks",
+      "when": { "risk_level": "critical" },
+      "decision": "deny",
+      "reason_codes": ["DND_DYNAMIC_CRITICAL_RISK"]
+    },
+    {
+      "rule_id": "dynamic_dnd_low_confidence_blocks_commit",
+      "when": { "action": "commit-plan", "confidence_not_in": ["high"] },
+      "decision": "deny",
+      "reason_codes": ["DND_DYNAMIC_LOW_CONFIDENCE"]
+    },
+    {
+      "rule_id": "dynamic_dnd_external_ai_requires_review",
+      "when": { "external_ai": true, "action_in": ["commit-plan", "release-plan", "destructive"] },
+      "decision": "deny",
+      "reason_codes": ["DND_DYNAMIC_EXTERNAL_AI_REVIEW_REQUIRED"]
+    },
+    {
+      "rule_id": "dynamic_dnd_secret_material_blocks_commit",
+      "when": { "secret_material_found": true, "action_in": ["commit-plan", "release-plan"] },
+      "decision": "deny",
+      "reason_codes": ["DND_DYNAMIC_SECRET_MATERIAL"]
+    },
+    {
+      "rule_id": "dynamic_dnd_runtime_artifacts_block_release",
+      "when": { "runtime_artifacts_found": true, "action": "release-plan" },
+      "decision": "deny",
+      "reason_codes": ["DND_DYNAMIC_RUNTIME_ARTIFACTS"]
+    }
+  ]
+}
