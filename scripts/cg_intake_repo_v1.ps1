@@ -48,9 +48,9 @@ foreach($f in @(@($allFiles))){
   $name = $f.Name.ToLowerInvariant()
   $ext = $f.Extension.ToLowerInvariant()
   $kind = "unknown"
-  if($rel -match "policy" -and $ext -eq ".json"){ $kind = "policy"; $signals.Add("POLICY_FOUND") | Out-Null }
-  elseif($rel -match "overlay" -and $ext -eq ".json"){ $kind = "overlay"; $signals.Add("OVERLAY_FOUND") | Out-Null }
+  if($rel -match "overlay" -and $ext -eq ".json"){ $kind = "overlay"; $signals.Add("OVERLAY_FOUND") | Out-Null }
   elseif($rel -match "schema" -and $ext -eq ".json"){ $kind = "schema"; $signals.Add("SCHEMA_FOUND") | Out-Null }
+  elseif($rel -match "policy" -and $ext -eq ".json"){ $kind = "policy"; $signals.Add("POLICY_FOUND") | Out-Null }
   elseif($ext -eq ".sql"){ $kind = "sql"; $signals.Add("SQL_FOUND") | Out-Null }
   elseif($name -eq "package.json"){ $kind = "node_project"; $signals.Add("NODE_PROJECT") | Out-Null }
   elseif($rel -match "supabase"){ $kind = "supabase"; $signals.Add("SUPABASE_FOUND") | Out-Null }
