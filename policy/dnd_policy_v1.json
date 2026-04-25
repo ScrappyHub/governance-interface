@@ -1,0 +1,28 @@
+{
+  "schema": "covenantgate.dnd_policy.v1",
+  "version": 1,
+  "description": "DND = Do Not Do. Hard-blocked behaviors before action execution.",
+  "rules": [
+    {
+      "rule_id": "dnd_no_secret_commit",
+      "action": "commit",
+      "match": ["*.env", "*.key", "id_ed25519", "key_export/*", ".secrets/*"],
+      "decision": "deny",
+      "reason_codes": ["DND_SECRET_MATERIAL"]
+    },
+    {
+      "rule_id": "dnd_no_release_private_runtime",
+      "action": "release-plan",
+      "match": ["runtime/*", "proofs/_tmp/*", "node_modules/*"],
+      "decision": "deny",
+      "reason_codes": ["DND_RUNTIME_ARTIFACT"]
+    },
+    {
+      "rule_id": "dnd_no_destructive_without_dedicated_flow",
+      "action": "destructive",
+      "match": ["*"],
+      "decision": "deny",
+      "reason_codes": ["DND_DESTRUCTIVE_ACTION"]
+    }
+  ]
+}
