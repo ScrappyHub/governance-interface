@@ -4,8 +4,8 @@ param(
   [Parameter(Mandatory=$true)][string]$Prompt,
   [string]$AiOutputText = "",
   [string]$Decision = "unknown",
-  [string[]]$ReasonCodes = @(),
-  [string[]]$Events = @(),
+  [string]$ReasonCodesCsv = "",
+  [string]$EventsCsv = "",
   [string]$OutDir = ""
 )
 
@@ -46,8 +46,8 @@ $core = [ordered]@{
   prompt_sha256 = Sha256Text $Prompt
   ai_output_sha256 = Sha256Text $AiOutputText
   decision = $Decision
-  reason_codes = @($ReasonCodes | Sort-Object -Unique)
-  events = @($Events)
+  reason_codes = @(@($ReasonCodesCsv -split ",") | Where-Object { -not [string]::IsNullOrWhiteSpace($_) } | Sort-Object -Unique)
+  events = @(@($EventsCsv -split "\|") | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 }
 
 $traceHash = Sha256Text (($core | ConvertTo-Json -Depth 50 -Compress))

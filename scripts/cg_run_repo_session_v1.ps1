@@ -43,7 +43,19 @@ if(($gateExit -ne 0) -and ($gateExit -ne 2)){ throw ("RUN_GATE_UNEXPECTED_EXIT: 
 $GatePath = @(Get-ChildItem -LiteralPath $Bundle -Filter "cg_ai_adapter_contract_gate_*.json" -File | Sort-Object Name | Select-Object -Last 1)[0].FullName
 $GateObj = Read-Json $GatePath
 
-& $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $Trace -RepoRoot $RepoRoot -ContextContractPath $ContextPath -Prompt $Prompt -AiOutputText $AiText -Decision ([string]$GateObj.decision) -ReasonCodes @($GateObj.reason_codes) -Events @($GateObj.events) -OutDir $Bundle | Out-Host
+$reasonCsv = (@($GateObj.reason_codes) -join ",")
+$eventCsv  = (@($GateObj.events) -join "|")
+
+& $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File $Trace `
+  -RepoRoot $RepoRoot `
+  -ContextContractPath $ContextPath `
+  -Prompt $Prompt `
+  -AiOutputText $AiText `
+  -Decision ([string]$GateObj.decision) `
+  -ReasonCodesCsv $reasonCsv `
+  -EventsCsv $eventCsv `
+  -OutDir $Bundle | Out-Host
 if($LASTEXITCODE -ne 0){ throw "RUN_TRACE_FAILED" }
 
 Write-Host ("CG_RUN_REPO_SESSION_BUNDLE: " + $Bundle) -ForegroundColor Cyan
