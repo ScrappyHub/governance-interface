@@ -73,18 +73,27 @@ if(Test-Path -LiteralPath $SchemaIngest -PathType Leaf){
   $schemaOut = Join-Path $OutDir "_schema_contract"
   Ensure-Dir $schemaOut
   $PSExe = (Get-Command powershell.exe -ErrorAction Stop).Source
-  & $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
-    -File $SchemaIngest `
-    -RepoRoot $RepoRoot `
-    -TargetRepo $TargetRepo `
-    -OutDir $schemaOut | Out-Null
 
-  if($LASTEXITCODE -eq 0){
-    $c = @(Get-ChildItem -LiteralPath $schemaOut -Filter "cg_schema_contract_*.json" -File | Sort-Object Name | Select-Object -Last 1)
-    if(@($c).Count -gt 0){
-      $schemaContractPath = $c[0].FullName
-      $schemaContractHash = Sha256File $schemaContractPath
+  try {
+    & $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+      -File $SchemaIngest `
+      -RepoRoot $RepoRoot `
+      -TargetRepo $TargetRepo `
+      -OutDir $schemaOut | Out-Null
+
+    if($LASTEXITCODE -eq 0){
+      $c = @(Get-ChildItem -LiteralPath $schemaOut -Filter "cg_schema_contract_*.json" -File | Sort-Object Name | Select-Object -Last 1)
+      if(@($c).Count -gt 0){
+        $schemaContractPath = $c[0].FullName
+        $schemaContractHash = Sha256File $schemaContractPath
+      }
+    } else {
+      $schemaContractPath = ""
+      $schemaContractHash = ""
     }
+  } catch {
+    $schemaContractPath = ""
+    $schemaContractHash = ""
   }
 }
 
