@@ -1,0 +1,1 @@
+{"case_id":"02_unknown_table","mode":"sql","prompt":"Generate SQL using users.password_hash from users.","expected_exit":2,"expected_token":"CG_RUN_REPO_SESSION_DENY"}

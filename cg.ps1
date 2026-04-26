@@ -1,59 +1,24 @@
 param(
-  [Parameter(Mandatory=$true)][string]$Command,
-  [string]$Bundle,
-  [string]$Input,
-  [string]$Out,
-  [string]$Prompt
+  [Parameter(Mandatory=$true)][ValidateSet("run")][string]$Command,
+  [Parameter(Mandatory=$true)][string]$Repo,
+  [Parameter(Mandatory=$true)][string]$Prompt,
+  [ValidateSet("plan","explain","sql","action")][string]$Mode = "plan",
+  [ValidateSet("stub","openai")][string]$Adapter = "stub"
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-function Die([string]$m){ throw $m }
+$RepoRoot = (Split-Path -Parent $MyInvocation.MyCommand.Path)
+$Runner = Join-Path $RepoRoot "scripts\cg_run_repo_session_v1.ps1"
+$PSExe = (Get-Command powershell.exe -ErrorAction Stop).Source
 
-$RepoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+& $PSExe -NoProfile -NonInteractive -ExecutionPolicy Bypass `
+  -File $Runner `
+  -RepoRoot $RepoRoot `
+  -TargetRepo $Repo `
+  -Prompt $Prompt `
+  -Mode $Mode `
+  -Adapter $Adapter
 
-switch ($Command) {
-
-  "verify-policy" {
-    if(-not $Bundle){ Die "MISSING_BUNDLE" }
-
-    & "$RepoRoot\scripts\cg_verify_policy_bundle_sig_v1.ps1" `
-      -RepoRoot $RepoRoot `
-      -BundlePath $Bundle
-
-    Write-Host "CG_VERIFY_POLICY_OK"
-    break
-  }
-
-  "eval" {
-    if(-not $Bundle){ Die "MISSING_BUNDLE" }
-    if(-not $Input){ Die "MISSING_INPUT" }
-
-    & "$RepoRoot\scripts\cg_eval_v1.ps1" `
-      -RepoRoot $RepoRoot `
-      -BundlePath $Bundle `
-      -InputPath $Input `
-      -OutPath $Out
-
-    Write-Host "CG_EVAL_OK"
-    break
-  }
-
-  "chat" {
-    if(-not $Bundle){ Die "MISSING_BUNDLE" }
-    if(-not $Prompt){ Die "MISSING_PROMPT" }
-
-    & "$RepoRoot\scripts\cg_conversation_layer_v1.ps1" `
-      -RepoRoot $RepoRoot `
-      -BundlePath $Bundle `
-      -Prompt $Prompt
-
-    Write-Host "CG_CHAT_OK"
-    break
-  }
-
-  default {
-    Die ("UNKNOWN_COMMAND: " + $Command)
-  }
-}
+exit $LASTEXITCODE

@@ -1,0 +1,1 @@
+{"case_id":"04_safe_plan","mode":"plan","prompt":"Explain the next safe plan only.","expected_exit":0,"expected_token":"CG_RUN_REPO_SESSION_OK"}
